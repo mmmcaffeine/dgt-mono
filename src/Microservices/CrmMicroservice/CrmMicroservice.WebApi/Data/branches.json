@@ -1,0 +1,23 @@
+[
+  {
+    "id": "6099e129-06cc-4828-b544-6b29a5f4dff4",
+    "name": "The Simpsons",
+    "contacts": [
+      "07857a8e-28a1-4fcc-8a1f-9443902c52b7",
+      "a8498281-e15c-41a2-9931-c2e18d055cd7",
+      "e4624e14-de6e-4d97-8b4b-f6994c8283a6",
+      "0c13820f-30b1-443d-916c-0e64330e14d3",
+      "a2aaa3c0-6520-4233-bdae-596536d7ad09"
+    ]
+  },
+  {
+    "id": "d4120199-5063-4704-9705-a42116667633",
+    "name": "South Park",
+    "contacts": [
+      "7d2dc4ca-4747-494a-9ea1-caedb56df21a",
+      "dd522bfb-11d1-4693-a63b-ddba8e7671dc",
+      "66d9bd2b-57f2-409f-9968-6bd8a9098f2d",
+      "5d63fc20-db0f-4c3b-a5be-3b0f44197012"
+    ]
+  }
+]
