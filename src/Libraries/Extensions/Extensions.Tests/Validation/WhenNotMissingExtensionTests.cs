@@ -6,20 +6,17 @@ namespace Dgt.Extensions.Validation
 {
     public static class WhenNotMissingExtensionTests
     {
-        private class MissingStringTheoryData : TheoryData<string?>
+        public static TheoryData<string?> MissingStringTheoryData => new()
         {
-            public MissingStringTheoryData()
-            {
-                Add(null);
-                Add(string.Empty);
-                Add("  ");
-                Add("\t");
-                Add(Environment.NewLine);
-            }
-        }
+            null,
+            string.Empty,
+            "  ",
+            "\t",
+            Environment.NewLine
+        };
 
         [Theory]
-        [ClassData(typeof(MissingStringTheoryData))]
+        [MemberData(nameof(MissingStringTheoryData))]
         public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNull_Then_ExceptionThrown(string? value)
         {
             value.Invoking(s => s.WhenNotMissing())
@@ -29,7 +26,7 @@ namespace Dgt.Extensions.Validation
         }
 
         [Theory]
-        [ClassData(typeof(MissingStringTheoryData))]
+        [MemberData(nameof(MissingStringTheoryData))]
         public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNotNull_Then_ExceptionThrown(string? value)
         {
             value.Invoking(s => s.WhenNotMissing("parameter"))
