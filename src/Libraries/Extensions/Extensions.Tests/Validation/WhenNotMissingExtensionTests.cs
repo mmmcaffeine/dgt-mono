@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -7,21 +6,21 @@ namespace Dgt.Extensions.Validation
 {
     public static class WhenNotMissingExtensionTests
     {
-        public static IEnumerable<object?[]> MissingStrings
+        private class MissingStringTheoryData : TheoryData<string?>
         {
-            get
+            public MissingStringTheoryData()
             {
-                yield return new object?[] {(string?) null};
-                yield return new object?[] {string.Empty};
-                yield return new object?[] {"  "};
-                yield return new object?[] {"\t"};
-                yield return new object?[] {Environment.NewLine};
+                Add(null);
+                Add(string.Empty);
+                Add("  ");
+                Add("\t");
+                Add(Environment.NewLine);
             }
         }
 
         [Theory]
-        [MemberData(nameof(MissingStrings))]
-        public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNull_Then_ExceptionThrown(string value)
+        [ClassData(typeof(MissingStringTheoryData))]
+        public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNull_Then_ExceptionThrown(string? value)
         {
             value.Invoking(s => s.WhenNotMissing())
                 .Should().Throw<ArgumentException>()
@@ -30,8 +29,8 @@ namespace Dgt.Extensions.Validation
         }
 
         [Theory]
-        [MemberData(nameof(MissingStrings))]
-        public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNotNull_Then_ExceptionThrown(string value)
+        [ClassData(typeof(MissingStringTheoryData))]
+        public static void WhenNotMissing_Given_ValueIsMissingAndParamNameIsNotNull_Then_ExceptionThrown(string? value)
         {
             value.Invoking(s => s.WhenNotMissing("parameter"))
                 .Should().Throw<ArgumentException>()
