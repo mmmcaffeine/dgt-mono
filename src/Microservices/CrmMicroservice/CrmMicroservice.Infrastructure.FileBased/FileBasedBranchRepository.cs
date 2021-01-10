@@ -21,7 +21,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         {
             var value = options.Value.WhenNotNull(nameof(options));
             
-            _path = value.BranchesPath!;
+            _path = value.BranchesPath;
             _delay = value.Delay;
         }
 

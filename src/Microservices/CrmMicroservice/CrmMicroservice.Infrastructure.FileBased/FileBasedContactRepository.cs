@@ -53,7 +53,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         {
             var value = options.Value.WhenNotNull(nameof(options));
             
-            _path = value.ContactsPath!;
+            _path = value.ContactsPath;
             _delay = value.Delay;
         }
 

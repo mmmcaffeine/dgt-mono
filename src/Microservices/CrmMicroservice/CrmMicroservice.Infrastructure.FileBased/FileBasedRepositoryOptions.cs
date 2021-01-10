@@ -1,11 +1,16 @@
-﻿namespace Dgt.CrmMicroservice.Infrastructure.FileBased
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
-    // TODO Validate paths are not null
-    // TODO Validate delay is not negative
     public class FileBasedRepositoryOptions
     {
-        public string? ContactsPath { get; set; }
-        public string? BranchesPath { get; set; }
+        [Required]
+        public string ContactsPath { get; set; } = default!;
+
+        [Required]
+        public string BranchesPath { get; set; } = default!;
+
+        [Range(0, int.MaxValue)]
         public int Delay { get; set; }
     }
 }
