@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentValidation;
@@ -36,13 +37,17 @@ namespace Dgt.Options
         }
 
         // TODO How am I going to support named options?
-        // TODO What happens if this gets called multiple times with the same generic parameter(s)?
         public static OptionsBuilder<TOptions> ValidateFluentValidation<TOptions, TValidator>([NotNull] this OptionsBuilder<TOptions> optionsBuilder)
             where TOptions : class
             where TValidator : AbstractValidator<TOptions>
         {
-            optionsBuilder.Services.AddTransient<AbstractValidator<TOptions>, TValidator>();
-            optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>, ValidateOptionsAdapter<TOptions>>();
+            var alreadyRegistered = optionsBuilder.Services.Any(x => x.ServiceType == typeof(AbstractValidator<TValidator>));
+
+            if (!alreadyRegistered)
+            {
+                optionsBuilder.Services.AddTransient<AbstractValidator<TOptions>, TValidator>();
+                optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>, ValidateOptionsAdapter<TOptions>>();
+            }
 
             return optionsBuilder;
         }
