@@ -23,6 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Libraries\Extensions\Extensions\Extensions.csproj" />
+      <ProjectReference Include="..\..\..\Libraries\Options\Options\Options.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Domain\CrmMicroservice.Domain.csproj" />
     </ItemGroup>
 

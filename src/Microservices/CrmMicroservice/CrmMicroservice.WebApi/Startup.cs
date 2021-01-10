@@ -23,7 +23,7 @@ namespace Dgt.CrmMicroservice.WebApi
         {
             services.AddOptions<FileBasedRepositoryOptions>()
                 .BindConfiguration("Repositories")
-                .ValidateDataAnnotations()
+                .ValidateFluentValidation()
                 .ValidateAtStartup();
 
             services.AddTransient<IContactRepository, FileBasedContactRepository>();

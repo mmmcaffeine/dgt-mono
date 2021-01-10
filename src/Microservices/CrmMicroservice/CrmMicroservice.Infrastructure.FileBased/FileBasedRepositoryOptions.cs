@@ -1,16 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Dgt.Options;
+using FluentValidation;
 
 namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
-    public class FileBasedRepositoryOptions
+    public class FileBasedRepositoryOptions : OptionsValidatorBase<FileBasedRepositoryOptions>
     {
-        [Required]
+        public FileBasedRepositoryOptions()
+        {
+            RuleFor(x => x.ContactsPath).NotEmpty();
+            RuleFor(x => x.BranchesPath).NotEmpty();
+            RuleFor(x => x.Delay).GreaterThanOrEqualTo(0);
+        }
+
         public string ContactsPath { get; set; } = default!;
 
-        [Required]
         public string BranchesPath { get; set; } = default!;
 
-        [Range(0, int.MaxValue)]
         public int Delay { get; set; }
     }
 }
