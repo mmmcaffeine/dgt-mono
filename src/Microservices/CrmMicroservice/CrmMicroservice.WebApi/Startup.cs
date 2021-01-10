@@ -21,8 +21,12 @@ namespace Dgt.CrmMicroservice.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions<FileBasedRepositoryOptions>()
-                .BindConfiguration("Repositories")
+            services.AddOptions<FileBasedRepositoryOptions>(FileBasedRepositoryOptions.ContactRepository)
+                .BindConfiguration($"{FileBasedRepositoryOptions.Repositories}:{FileBasedRepositoryOptions.ContactRepository}")
+                .ValidateFluentValidation()
+                .ValidateAtStartup();
+            services.AddOptions<FileBasedRepositoryOptions>(FileBasedRepositoryOptions.BranchRepository)
+                .BindConfiguration($"{FileBasedRepositoryOptions.Repositories}:{FileBasedRepositoryOptions.BranchRepository}")
                 .ValidateFluentValidation()
                 .ValidateAtStartup();
 

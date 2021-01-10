@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +13,18 @@ namespace Dgt.Options
         public static OptionsBuilder<TOptions> ValidateAtStartup<TOptions>([NotNull] this OptionsBuilder<TOptions> optionsBuilder)
             where TOptions : class
         {
-            optionsBuilder.Services.AddTransient<IStartupFilter, ValidateOptionsStartupFilter<TOptions>>();
+            switch (optionsBuilder.Name)
+            {
+                case null:
+                    throw new NotSupportedException("There is currently no way to discover all named instances of this type of options.");
+                case "":
+                    optionsBuilder.Services.AddTransient<IStartupFilter, ValidateOptionsStartupFilter<TOptions>>();
+                    break;
+                default:
+                    optionsBuilder.Services.AddTransient<IStartupFilter>(provider =>
+                        ActivatorUtilities.CreateInstance<ValidateOptionsStartupFilter<TOptions>>(provider, optionsBuilder.Name));
+                    break;
+            }
 
             return optionsBuilder;
         }

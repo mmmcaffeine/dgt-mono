@@ -49,12 +49,13 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         private readonly string _path;
         private readonly int _delay;
 
-        public FileBasedContactRepository(IOptions<FileBasedRepositoryOptions> options)
+        public FileBasedContactRepository(IOptionsSnapshot<FileBasedRepositoryOptions> optionsSnapshot)
         {
-            var value = options.Value.WhenNotNull(nameof(options));
-            
-            _path = value.ContactsPath;
-            _delay = value.Delay;
+            var options = optionsSnapshot
+                .WhenNotNull(nameof(optionsSnapshot))
+                .Get(FileBasedRepositoryOptions.ContactRepository);
+
+            (_path, _delay) = options;
         }
 
         // For now we have the same shape as the ContactEntity so we _could_ deserialize directly into that

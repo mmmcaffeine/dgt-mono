@@ -17,12 +17,13 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         private readonly string _path;
         private readonly int _delay;
 
-        public FileBasedBranchRepository(IOptions<FileBasedRepositoryOptions> options)
+        public FileBasedBranchRepository(IOptionsSnapshot<FileBasedRepositoryOptions> optionsSnapshot)
         {
-            var value = options.Value.WhenNotNull(nameof(options));
-            
-            _path = value.BranchesPath;
-            _delay = value.Delay;
+            var options = optionsSnapshot
+                .WhenNotNull(nameof(optionsSnapshot))
+                .Get(FileBasedRepositoryOptions.BranchRepository);
+
+            (_path, _delay) = options;
         }
 
         public async Task<BranchEntity> GetBranchAsync(Guid id)
