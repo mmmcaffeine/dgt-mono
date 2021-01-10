@@ -20,12 +20,10 @@ namespace Dgt.CrmMicroservice.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            const string contactsPath = @".\Data\contacts.json";
-            const string branchesPath = @".\Data\branches.json";
-            const int delay = 500;
+            services.Configure<FileBasedRepositoryOptions>(_configuration.GetSection("Repositories"));
 
-            services.AddTransient<IContactRepository>(provider => ActivatorUtilities.CreateInstance<FileBasedContactRepository>(provider, contactsPath, delay));
-            services.AddTransient<IBranchRepository>(provider => ActivatorUtilities.CreateInstance<FileBasedBranchRepository>(provider, branchesPath, delay));
+            services.AddTransient<IContactRepository, FileBasedContactRepository>();
+            services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

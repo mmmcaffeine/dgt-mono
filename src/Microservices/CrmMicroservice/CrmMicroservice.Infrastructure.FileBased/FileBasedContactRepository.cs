@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
+using Dgt.Extensions.Validation;
+using Microsoft.Extensions.Options;
 
 namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
@@ -47,12 +49,12 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         private readonly string _path;
         private readonly int _delay;
 
-        // TODO Validate path is not null
-        // TODO Validate delay is not negative
-        public FileBasedContactRepository(string path, int delay)
+        public FileBasedContactRepository(IOptions<FileBasedRepositoryOptions> options)
         {
-            _path = path;
-            _delay = delay;
+            var value = options.Value.WhenNotNull(nameof(options));
+            
+            _path = value.ContactsPath!;
+            _delay = value.Delay;
         }
 
         // For now we have the same shape as the ContactEntity so we _could_ deserialize directly into that

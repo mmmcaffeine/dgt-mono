@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
+using Dgt.Extensions.Validation;
+using Microsoft.Extensions.Options;
 
 namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
@@ -15,12 +17,12 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         private readonly string _path;
         private readonly int _delay;
 
-        // TODO Validate path is not null
-        // TODO Validate delay is not negative
-        public FileBasedBranchRepository(string path, int delay)
+        public FileBasedBranchRepository(IOptions<FileBasedRepositoryOptions> options)
         {
-            _path = path;
-            _delay = delay;
+            var value = options.Value.WhenNotNull(nameof(options));
+            
+            _path = value.BranchesPath!;
+            _delay = value.Delay;
         }
 
         public async Task<BranchEntity> GetBranchAsync(Guid id)
