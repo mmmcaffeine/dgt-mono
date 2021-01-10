@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\Libraries\Options\Options\Options.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Domain\CrmMicroservice.Domain.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Infrastructure.FileBased\CrmMicroservice.Infrastructure.FileBased.csproj" />
     </ItemGroup>

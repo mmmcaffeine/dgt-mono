@@ -1,5 +1,6 @@
 using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
+using Dgt.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,8 @@ namespace Dgt.CrmMicroservice.WebApi
         {
             services.AddOptions<FileBasedRepositoryOptions>()
                 .BindConfiguration("Repositories")
-                .ValidateDataAnnotations();
+                .ValidateDataAnnotations()
+                .ValidateAtStartup();
 
             services.AddTransient<IContactRepository, FileBasedContactRepository>();
             services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
