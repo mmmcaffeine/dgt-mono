@@ -13,15 +13,20 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         private record BranchDto(Guid Id, string Name, IEnumerable<Guid> Contacts);
 
         private readonly string _path;
+        private readonly int _delay;
 
-        // TODO Validate not null
-        public FileBasedBranchRepository(string path)
+        // TODO Validate path is not null
+        // TODO Validate delay is not negative
+        public FileBasedBranchRepository(string path, int delay)
         {
             _path = path;
+            _delay = delay;
         }
 
         public async Task<BranchEntity> GetBranchAsync(Guid id)
         {
+            await Task.Delay(_delay);
+
             var json = await File.ReadAllTextAsync(_path);
             var options = new JsonSerializerOptions
             {
@@ -30,7 +35,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             var dtos = JsonSerializer.Deserialize<List<BranchDto>>(json, options);
             // TODO Better exception handling e.g. multiple matches
             var (_, name, contactIds) = dtos?.SingleOrDefault(x => x.Id == id)
-                                         ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id));
+                                        ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id));
 
             return new BranchEntity
             {

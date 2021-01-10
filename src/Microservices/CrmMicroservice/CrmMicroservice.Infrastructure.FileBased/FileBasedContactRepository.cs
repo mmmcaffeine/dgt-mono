@@ -45,16 +45,21 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         }
 
         private readonly string _path;
+        private readonly int _delay;
 
-        // TODO Validate not null
-        public FileBasedContactRepository(string path)
+        // TODO Validate path is not null
+        // TODO Validate delay is not negative
+        public FileBasedContactRepository(string path, int delay)
         {
             _path = path;
+            _delay = delay;
         }
 
         // For now we have the same shape as the ContactEntity so we _could_ deserialize directly into that
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
+            await Task.Delay(_delay);
+
             var json = await File.ReadAllTextAsync(_path);
             var options = new JsonSerializerOptions
             {
