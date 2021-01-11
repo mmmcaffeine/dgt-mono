@@ -19,6 +19,15 @@
         <WarningsAsErrors />
         <NoWarn />
         <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
     </PropertyGroup>
 
 </Project>
