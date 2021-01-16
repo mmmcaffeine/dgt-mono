@@ -37,6 +37,20 @@ namespace Dgt.Caching
             Environment.NewLine
         };
 
+        [Fact]
+        public void SetRecordAsync_Should_ThrowException_When_CacheIsNull()
+        {
+            // Arrange
+            var key = Guid.NewGuid().ToString();
+            var value = new Person("Homer", "Simpson");
+            var sut = (IDistributedCache) null!;
+
+            // Act
+            sut.Invoking(cache => cache!.SetRecordAsync(key, value))
+                .Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("cache");
+        }
+
         [Theory]
         [MemberData(nameof(MissingStringTheoryData))]
         public void SetRecordAsync_Should_ThrowException_When_KeyIsMissing(string? key)
@@ -178,6 +192,19 @@ namespace Dgt.Caching
                 .Should().Throw<ArgumentException>()
                 .WithMessage("Value cannot be null, whitespace, or an empty string.*")
                 .And.ParamName.Should().Be("key");
+        }
+
+        [Fact]
+        public void GetRecordAsync_Should_ThrowException_When_CacheIsNull()
+        {
+            // Arrange
+            var key = Guid.NewGuid().ToString();
+            var sut = (IDistributedCache) null!;
+
+            // Act
+            sut.Invoking(cache => cache!.GetRecordAsync<Person>(key))
+                .Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("cache");
         }
 
         [Fact]
