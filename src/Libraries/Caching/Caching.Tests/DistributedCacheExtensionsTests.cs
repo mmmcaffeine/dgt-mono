@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -163,6 +164,71 @@ namespace Dgt.Caching
                 It.IsAny<byte[]>(),
                 It.Is<DistributedCacheEntryOptions>(options => optionsMatcher(options)),
                 It.IsAny<CancellationToken>()));
+        }
+
+        [Theory]
+        [MemberData(nameof(MissingStringTheoryData))]
+        public void GetRecordAsync_Should_ThrowException_When_KeyIsMissing(string? key)
+        {
+            // Arrange
+            // Nothing to do here
+
+            // Act, Assert
+            _sut.Invoking(cache => cache.GetRecordAsync<Person>(key!))
+                .Should().Throw<ArgumentException>()
+                .WithMessage("Value cannot be null, whitespace, or an empty string.*")
+                .And.ParamName.Should().Be("key");
+        }
+
+        [Fact]
+        public async Task GetRecordAsync_Should_ReturnDefault_When_ValueIsNotInCache()
+        {
+            // Arrange
+            _cacheMock.Setup(cache => cache.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((byte[]?) null);
+
+            // Act
+            var actual = await _sut.GetRecordAsync<Person?>(Guid.NewGuid().ToString());
+
+            // Assert
+            actual.Should().BeNull();
+        }
+
+        [Fact(Skip = "This is not implemented yet.")]
+        public void GetRecordAsync_ShouldThrow_When_CachedTypeDoesNotMatchRequestedType()
+        {
+            // Arrange
+            const string json = "{\"Make\":\"Ford\",\"Model\":\"Focus\",\"Registration\":\"AE52 GUK\"}";
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var key = Guid.NewGuid().ToString();
+            
+            _cacheMock.Setup(cache => cache.GetAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync(bytes);
+
+            // Act, Assert
+            _sut.Awaiting(cache => cache.GetRecordAsync<Person>(key))
+                .Should().Throw<InvalidOperationException>()
+                .WithMessage("The cached type does not match the requested type*")
+                .WithMessage($"*requested type = {nameof(Person)}*")
+                .And.Data.Should().Contain(new DictionaryEntry("key", key))
+                .And.Contain(new DictionaryEntry("requestedType", typeof(Person)));
+        }
+
+        [Fact]
+        public async Task GetRecordAsync_Should_ReturnDeserializedInstance_When_ValueIsInCache()
+        {
+            // Arrange
+            const string json = "{\"FirstName\":\"Homer\",\"LastName\":\"Simpson\"}";
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var key = Guid.NewGuid().ToString();
+            var expected = new Person("Homer", "Simpson");
+
+            _cacheMock.Setup(cache => cache.GetAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync(bytes);
+
+            // Act
+            var actual = await _sut.GetRecordAsync<Person>(key);
+
+            // Assert
+            actual.Should().Be(expected);
         }
     }
 }
