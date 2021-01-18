@@ -53,7 +53,7 @@ namespace Dgt.Caching
 
         [Theory]
         [MemberData(nameof(MissingStringTheoryData))]
-        public void SetRecordAsync_Should_ThrowException_When_KeyIsMissing(string? key)
+        public void SetRecordAsync_Should_Throw_When_KeyIsMissing(string? key)
         {
             // Arrange
             var value = new Person("Homer", "Simpson");
@@ -66,7 +66,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public void SetRecordAsync_Should_ThrowException_When_ValueIsNull()
+        public void SetRecordAsync_Should_Throw_When_ValueIsNull()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -78,7 +78,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public async Task SetRecordAsync_Should_SetSerializedBytes_When_GivenKeyAndValue()
+        public async Task SetRecordAsync_Should_SetSerializedBytes_When_KeyAndValuePassed()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -99,7 +99,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public async Task SetRecordAsync_Should_SetDefaultAbsoluteExpirationOfOneMinuteOnOptions_When_NoAbsoluteExpirationSupplied()
+        public async Task SetRecordAsync_Should_SetDefaultAbsoluteExpirationOfOneMinuteOnOptions_When_NoAbsoluteExpirationPassed()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -120,7 +120,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public async Task SetRecordAsync_Should_SetAbsoluteExpirationOnOptions_When_AbsoluteExpirationSupplied()
+        public async Task SetRecordAsync_Should_SetAbsoluteExpirationOnOptions_When_AbsoluteExpirationPassed()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -141,7 +141,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public async Task SetRecordAsync_Should_NotSetSlidingExpirationOnOptions_When_NoSlidingExpirationSupplied()
+        public async Task SetRecordAsync_Should_NotSetSlidingExpirationOnOptions_When_SlidingExpirationNotPassed()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -160,7 +160,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public async Task SetRecordAsync_Should_SetSlidingExpirationOnOptions_When_SlidingExpirationSupplied()
+        public async Task SetRecordAsync_Should_SetSlidingExpirationOnOptions_When_SlidingExpirationPassed()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -182,7 +182,7 @@ namespace Dgt.Caching
 
         [Theory]
         [MemberData(nameof(MissingStringTheoryData))]
-        public void GetRecordAsync_Should_ThrowException_When_KeyIsMissing(string? key)
+        public void GetRecordAsync_Should_Throw_When_KeyIsMissing(string? key)
         {
             // Arrange
             // Nothing to do here
@@ -195,7 +195,7 @@ namespace Dgt.Caching
         }
 
         [Fact]
-        public void GetRecordAsync_Should_ThrowException_When_CacheIsNull()
+        public void GetRecordAsync_Should_Throw_When_CacheIsNull()
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
@@ -222,7 +222,7 @@ namespace Dgt.Caching
         }
 
         [Fact(Skip = "This is not implemented yet.")]
-        public void GetRecordAsync_ShouldThrow_When_CachedTypeDoesNotMatchRequestedType()
+        public void GetRecordAsync_Should_Throw_When_CachedTypeDoesNotMatchRequestedType()
         {
             // Arrange
             const string json = "{\"Make\":\"Ford\",\"Model\":\"Focus\",\"Registration\":\"AE52 GUK\"}";
