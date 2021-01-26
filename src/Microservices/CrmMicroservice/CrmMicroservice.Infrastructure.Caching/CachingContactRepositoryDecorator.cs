@@ -17,10 +17,20 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             _cache = cache.WhenNotNull(nameof(cache));
         }
 
+        // ENHANCE You might want some sort of circuit breaker for the cache in here
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
             var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
-            var contact = await _cache.GetRecordAsync<ContactEntity>(key);
+            ContactEntity? contact; 
+
+            try
+            {
+                contact = await _cache.GetRecordAsync<ContactEntity>(key);
+            }
+            catch
+            {
+                return await _contactRepository.GetContactAsync(id);
+            }
 
             if (contact is null)
             {

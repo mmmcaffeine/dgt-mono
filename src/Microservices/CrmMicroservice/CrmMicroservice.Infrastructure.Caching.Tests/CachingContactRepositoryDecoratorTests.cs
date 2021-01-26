@@ -73,6 +73,47 @@ namespace CrmMicroservice.Infrastructure.Caching
         }
 
         [Fact]
+        public async Task GetContactAsync_Should_FallBackToRepository_When_CacheIsInError()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var expected = new ContactEntity {Id = id};
+
+            _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(expected);
+
+            // Act
+            var actual = await _sut.GetContactAsync(id);
+            
+            // Assert
+            actual.Should().BeSameAs(expected);
+        }
+
+        [Fact]
+        public async Task GetContactAsync_Should_NotAttemptToCacheContact_When_CacheIsInError()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var contact = new ContactEntity {Id = id};
+
+            _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(contact);
+
+            // Act
+            _ = await _sut.GetContactAsync(id);
+
+            // Assert
+            _cacheMock.Verify(cache => cache.SetRecordAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<ContactEntity>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task GetContactAsync_Should_NotGetContactFromRepository_When_ContactIsCached()
         {
             // Arrange
