@@ -1,4 +1,6 @@
+using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
+using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
 using Dgt.Options;
 using Microsoft.AspNetCore.Builder;
@@ -30,8 +32,18 @@ namespace Dgt.CrmMicroservice.WebApi
                 .ValidateFluentValidation()
                 .ValidateAtStartup();
 
-            services.AddTransient<IContactRepository, FileBasedContactRepository>();
+            // ENHANCE Some method on IServiceCollection where we can bind to a type, but with a decorator on it
+            services.AddTransient<FileBasedContactRepository>();
+            services.AddTransient<IContactRepository>(provider =>
+                ActivatorUtilities.CreateInstance<CachingContactRepositoryDecorator>(provider, provider.GetRequiredService<FileBasedContactRepository>()));
             services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
+            services.AddTransient<ITypedCache, TypedCache>();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = _configuration.GetConnectionString("Redis");
+                options.InstanceName = "crm:";
+            });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

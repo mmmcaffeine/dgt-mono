@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <AssemblyName>Dgt.CrmMicroservice.WebApi</AssemblyName>
         <RootNamespace>Dgt.CrmMicroservice.WebApi</RootNamespace>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+        <UserSecretsId>67f8bc2e-2fc1-4ae6-aaa1-5c20c8c6795f</UserSecretsId>
+  </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -26,12 +27,15 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\Libraries\Caching\Caching\Caching.csproj" />
       <ProjectReference Include="..\..\..\Libraries\Options\Options\Options.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Domain\CrmMicroservice.Domain.csproj" />
+      <ProjectReference Include="..\CrmMicroservice.Infrastructure.Caching\CrmMicroservice.Infrastructure.Caching.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Infrastructure.FileBased\CrmMicroservice.Infrastructure.FileBased.csproj" />
     </ItemGroup>
 

@@ -28,6 +28,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caching", "Libraries\Cachin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caching.Tests", "Libraries\Caching\Caching.Tests\Caching.Tests.csproj", "{9DECB860-529D-4E86-B930-563347507641}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmMicroservice.Infrastructure.Caching", "Microservices\CrmMicroservice\CrmMicroservice.Infrastructure.Caching\CrmMicroservice.Infrastructure.Caching.csproj", "{E3348450-0F90-4C15-BB3A-DA99FC00AA0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrmMicroservice.Infrastructure.Caching.Tests", "Microservices\CrmMicroservice\CrmMicroservice.Infrastructure.Caching.Tests\CrmMicroservice.Infrastructure.Caching.Tests.csproj", "{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +50,8 @@ Global
 		{DE7D3DBB-F3D9-47A5-9F10-B327FAC14570} = {1162B80F-1E56-4FEB-9ECF-53D285D00F39}
 		{356EAD9E-6F87-422E-97A3-440E9CB0B604} = {DE7D3DBB-F3D9-47A5-9F10-B327FAC14570}
 		{9DECB860-529D-4E86-B930-563347507641} = {DE7D3DBB-F3D9-47A5-9F10-B327FAC14570}
+		{E3348450-0F90-4C15-BB3A-DA99FC00AA0F} = {FA070662-C4DE-41DA-A021-1145D2C6C23B}
+		{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C} = {FA070662-C4DE-41DA-A021-1145D2C6C23B}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DAB1CE66-3240-4EA7-9E8D-11257F3290B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -80,5 +86,13 @@ Global
 		{9DECB860-529D-4E86-B930-563347507641}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DECB860-529D-4E86-B930-563347507641}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DECB860-529D-4E86-B930-563347507641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3348450-0F90-4C15-BB3A-DA99FC00AA0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3348450-0F90-4C15-BB3A-DA99FC00AA0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3348450-0F90-4C15-BB3A-DA99FC00AA0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3348450-0F90-4C15-BB3A-DA99FC00AA0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC3D9E6A-E610-4C5C-890A-FE6DB7C2794C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

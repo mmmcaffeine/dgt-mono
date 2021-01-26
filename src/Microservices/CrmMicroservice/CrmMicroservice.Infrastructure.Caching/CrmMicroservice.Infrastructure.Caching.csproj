@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>Dgt.CrmMicroservice.Infrastructure.Caching</AssemblyName>
+        <RootNamespace>Dgt.CrmMicroservice.Infrastructure.Caching</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Libraries\Caching\Caching\Caching.csproj" />
+      <ProjectReference Include="..\..\..\Libraries\Extensions\Extensions\Extensions.csproj" />
+      <ProjectReference Include="..\CrmMicroservice.Domain\CrmMicroservice.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
