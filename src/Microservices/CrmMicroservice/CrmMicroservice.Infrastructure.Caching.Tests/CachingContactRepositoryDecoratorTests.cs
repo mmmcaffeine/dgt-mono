@@ -21,6 +21,26 @@ namespace CrmMicroservice.Infrastructure.Caching
         }
 
         [Fact]
+        public void Ctor_Should_Throw_When_ContactRepositoryIsNull()
+        {
+            // Arrange
+            Action action = () => _ = new CachingContactRepositoryDecorator(null!, _cacheMock.Object);
+            
+            // Act, Assert
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("contactRepository");
+        }
+
+        [Fact]
+        public void Ctor_Should_Throw_When_CacheIsNull()
+        {
+            // Arrange
+            Action action = () => _ = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, null!);
+            
+            // Act, Assert
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("cache");
+        }
+
+        [Fact]
         public async Task GetContactAsync_Should_GetContactFromRepository_When_ContactIsNotCached()
         {
             // Arrange
