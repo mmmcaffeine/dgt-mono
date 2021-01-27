@@ -92,10 +92,9 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, options);
 
             // TODO Exception handling
-            // No matches
             // Multiple matches (FUBAR source data)
-            // Nulls (I've basic mangled the NRT feature here...)
-            return (ContactEntity) dtos?.First()!;
+            return (ContactEntity) (dtos?.FirstOrDefault(dto => dto.Id == id)
+                   ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id)));
         }
 
         public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
