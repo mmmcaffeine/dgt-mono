@@ -41,6 +41,8 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<ITypedCache, TypedCache>();
 
             services.AddMediatR(GetType());
+            services.AddTransient<IPipelineBehavior<CreateContactCommand, CreateContactResponse>, ValidateCreateContactCommandPipelineBehaviour>();
+            
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = _configuration.GetConnectionString("Redis");
