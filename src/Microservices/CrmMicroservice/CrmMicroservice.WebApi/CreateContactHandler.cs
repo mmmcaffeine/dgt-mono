@@ -29,11 +29,9 @@ namespace Dgt.CrmMicroservice.WebApi
 
             await _contactRepository.InsertContactAsync(contact, cancellationToken);
 
-            // TODO How to get the location without hard-wiring the path? Maybe we only return the Id, and let the controller handle that
             return new CreateContactResponse
             {
-                Id = contact.Id,
-                Uri = $"contacts/{contact.Id}"
+                Id = contact.Id
             };
         }
     }
