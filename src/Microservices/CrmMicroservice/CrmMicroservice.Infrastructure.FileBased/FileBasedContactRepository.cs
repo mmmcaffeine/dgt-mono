@@ -27,14 +27,8 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             }
         }
         
-        private class ContactDto
+        private record ContactDto(Guid Id, string? Title, string? FirstName, string? LastName, Guid BranchId)
         {
-            public Guid Id { get; init; }
-            public string? Title { get; init; }
-            public string? FirstName { get; init; }
-            public string? LastName { get; init; }
-            public Guid BranchId { get; init; }
-
             [return: NotNullIfNotNull("dto")]
             public static explicit operator ContactEntity?(ContactDto? dto)
             {
@@ -62,13 +56,13 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
                 }
 
                 return new ContactDto
-                {
-                    Id = entity.Id,
-                    Title = entity.Title,
-                    FirstName = entity.FirstName,
-                    LastName = entity.LastName,
-                    BranchId = entity.BranchId
-                };
+                (
+                    entity.Id,
+                    entity.Title,
+                    entity.FirstName,
+                    entity.LastName,
+                    entity.BranchId
+                );
             }
         }
 
