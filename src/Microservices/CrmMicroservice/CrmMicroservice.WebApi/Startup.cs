@@ -3,6 +3,7 @@ using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
 using Dgt.Options;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,8 +42,9 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<ITypedCache, TypedCache>();
 
             services.AddMediatR(GetType());
-            services.AddTransient<IPipelineBehavior<CreateContactCommand, CreateContactResponse>, ValidateCreateContactCommandPipelineBehaviour>();
-            
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehaviour<,>));
+            services.AddTransient<IValidator<CreateContactCommand>, CreateContactCommandValidator>();
+
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = _configuration.GetConnectionString("Redis");
