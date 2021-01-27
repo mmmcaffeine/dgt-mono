@@ -3,6 +3,7 @@ using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
 using Dgt.Options;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +40,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
             services.AddTransient<ITypedCache, TypedCache>();
 
+            services.AddMediatR(GetType());
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = _configuration.GetConnectionString("Redis");

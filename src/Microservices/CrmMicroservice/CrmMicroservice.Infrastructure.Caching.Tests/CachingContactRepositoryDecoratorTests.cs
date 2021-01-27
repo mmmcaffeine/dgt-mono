@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
@@ -14,7 +15,7 @@ namespace CrmMicroservice.Infrastructure.Caching
         private readonly Mock<IContactRepository> _contactRepositoryMock = new();
         private readonly Mock<ITypedCache> _cacheMock = new();
         private readonly IContactRepository _sut;
-        
+
         public CachingContactRepositoryDecoratorTests()
         {
             _sut = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, _cacheMock.Object);
@@ -162,6 +163,72 @@ namespace CrmMicroservice.Infrastructure.Caching
 
             // Act
             _ = await _sut.GetContactAsync(id);
+
+            // Assert
+            _cacheMock.Verify(cache => cache.SetRecordAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<ContactEntity>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task InsertContactAsync_Should_InsertContact_When_ContactInserted()
+        {
+            // Arrange
+            using var tokenSource = new CancellationTokenSource();
+            var token = tokenSource.Token;
+            var id = Guid.NewGuid();
+            var contact = new ContactEntity {Id = id};
+
+            // Act
+            await _sut.InsertContactAsync(contact, token);
+
+            // Assert
+            _contactRepositoryMock.Verify(repo => repo.InsertContactAsync(contact, token), Times.Once);
+        }
+
+        [Fact]
+        public async Task InsertContactAsync_Should_CacheContact_When_ContactIsInserted()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+            var contact = new ContactEntity {Id = id};
+
+            // Act
+            await _sut.InsertContactAsync(contact);
+
+            // Assert
+            _cacheMock.Verify(cache => cache.SetRecordAsync(
+                    key,
+                    contact,
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task InsertContactAsync_Should_NotCacheContact_When_InsertingContactFails()
+        {
+            // Arrange
+            var contact = new ContactEntity {Id = Guid.NewGuid()};
+
+            _contactRepositoryMock
+                .Setup(repo => repo.InsertContactAsync(It.IsAny<ContactEntity>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+
+            // Act
+            try
+            {
+                // ENHANCE You need your InvokeSilently extension method here!
+                await _sut.InsertContactAsync(contact);
+            }
+            catch
+            {
+                // Deliberately suppress exceptions so we can verify caching
+            }
 
             // Assert
             _cacheMock.Verify(cache => cache.SetRecordAsync(

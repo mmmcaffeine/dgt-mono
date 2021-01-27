@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
@@ -39,6 +41,14 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             }
 
             return contact;
+        }
+
+        public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
+        {
+            var key = $"{nameof(ContactEntity)}:{contact.Id}".ToLowerInvariant();
+
+            await _contactRepository.InsertContactAsync(contact, cancellationToken);
+            await _cache.SetRecordAsync(key, contact);
         }
     }
 }
