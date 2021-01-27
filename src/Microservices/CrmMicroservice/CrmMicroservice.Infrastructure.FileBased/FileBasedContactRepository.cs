@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
@@ -15,19 +15,24 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
     public class FileBasedContactRepository : IContactRepository
     {
+        private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy
+        {
+            private const string SplitWordsPattern = "((?<=[a-z])[A-Z]|(?<!^)[A-Z](?=[a-z]))";
+            
+            public override string ConvertName(string name)
+            {
+                return string.IsNullOrWhiteSpace(name)
+                    ? name
+                    : Regex.Replace(name, SplitWordsPattern, x => $"_{x.Value}").ToLowerInvariant();
+            }
+        }
+        
         private class ContactDto
         {
             public Guid Id { get; init; }
-
             public string? Title { get; init; }
-
-            [JsonPropertyName("first_name")]
             public string? FirstName { get; init; }
-
-            [JsonPropertyName("last_name")]
             public string? LastName { get; init; }
-
-            [JsonPropertyName("branch_id")]
             public Guid BranchId { get; init; }
 
             [return: NotNullIfNotNull("dto")]
@@ -67,6 +72,13 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             }
         }
 
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = new SnakeCaseJsonNamingPolicy()
+        };
+
         private readonly string _path;
         private readonly int _delay;
 
@@ -79,17 +91,12 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             (_path, _delay) = options;
         }
 
-        // For now we have the same shape as the ContactEntity so we _could_ deserialize directly into that
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
             await Task.Delay(_delay);
 
             var json = await File.ReadAllTextAsync(_path);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, options);
+            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions);
 
             // TODO Exception handling
             // Multiple matches (FUBAR source data)
@@ -100,20 +107,14 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
         public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
         {
             await Task.Delay(_delay, cancellationToken);
-
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
             await using var stream = File.Open(_path, FileMode.Open, FileAccess.ReadWrite);
 
-            var dtos = (await JsonSerializer.DeserializeAsync<List<ContactDto>>(stream, options, cancellationToken))!;
+            var dtos = (await JsonSerializer.DeserializeAsync<List<ContactDto>>(stream, JsonSerializerOptions, cancellationToken))!;
 
             dtos.Add((ContactDto) contact);
             stream.SetLength(0);
 
-            await JsonSerializer.SerializeAsync(stream, dtos, options, cancellationToken);
+            await JsonSerializer.SerializeAsync(stream, dtos, JsonSerializerOptions, cancellationToken);
         }
     }
 }
