@@ -20,9 +20,9 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var query = new GetContactByIdQuery {Id = id};
+            var query = (GetContactByIdQuery) id;
             var response = await _mediator.Send(query);
-
+        
             return new OkObjectResult(response);
         }
 
