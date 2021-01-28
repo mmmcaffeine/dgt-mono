@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -42,11 +41,7 @@ namespace Dgt.CrmMicroservice.WebApi
                     : new AggregateException("The request failed validation.", exceptions);
             }
 
-            const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            var parameterTypes = new[] {typeof(ValidationResult)};
-            var ctor = typeof(TResponse).GetConstructor(bindingFlags, null, parameterTypes, null)!;
-
-            return (TResponse)ctor.Invoke(new object?[] {validationResult});
+            return Response.Failure<TResponse>(validationResult);
         }
 
         private static bool IsRichResponse => typeof(Response).IsAssignableFrom(typeof(TResponse));
