@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -11,19 +10,20 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
     [Route("[controller]")]
     public class ContactsController : ControllerBase
     {
-        private readonly IContactRepository _contactRepository;
         private readonly IMediator _mediator;
 
-        public ContactsController(IContactRepository contactRepository, IMediator mediator)
+        public ContactsController(IMediator mediator)
         {
-            _contactRepository = contactRepository.WhenNotNull(nameof(mediator));
             _mediator = mediator.WhenNotNull(nameof(mediator));
         }
 
         [HttpGet("{id:guid}")]
-        public Task<ContactEntity> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            return _contactRepository.GetContactAsync(id);
+            var query = new GetContactByIdQuery {Id = id};
+            var response = await _mediator.Send(query);
+
+            return new OkObjectResult(response);
         }
 
         [HttpPost]
