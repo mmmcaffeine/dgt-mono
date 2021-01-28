@@ -2,6 +2,7 @@ using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
+using Dgt.CrmMicroservice.WebApi.Operations.Contacts;
 using Dgt.CrmMicroservice.WebApi.PipelineBehaviors;
 using Dgt.Options;
 using FluentValidation;
@@ -45,7 +46,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddMediatR(GetType());
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CatchUnhandledExceptionsPipelineBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehavior<,>));
-            services.AddTransient<IValidator<CreateContactCommand>, CreateContactCommandValidator>();
+            services.AddTransient<IValidator<CreateContactCommand.Request>, CreateContactCommand.RequestValidator>();
 
             services.AddStackExchangeRedisCache(options =>
             {
