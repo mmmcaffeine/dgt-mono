@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -33,7 +34,7 @@ namespace Dgt.CrmMicroservice.WebApi
                 return await next();
             }
 
-            if (request is not IRequest<Response>)
+            if (!IsRichResponse)
             {
                 var exceptions = validationResult.Errors.Select(error => new InvalidOperationException(error.ErrorMessage)).ToList();
                 throw exceptions.Count == 1
@@ -41,9 +42,13 @@ namespace Dgt.CrmMicroservice.WebApi
                     : new AggregateException("The request failed validation.", exceptions);
             }
 
-            var response = Activator.CreateInstance<TResponse>();
-            typeof(Response).GetProperty(nameof(Response.ValidationResult))?.SetValue(response, validationResult);
-            return response;
+            const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            var parameterTypes = new[] {typeof(ValidationResult)};
+            var ctor = typeof(TResponse).GetConstructor(bindingFlags, null, parameterTypes, null)!;
+
+            return (TResponse)ctor.Invoke(new object?[] {validationResult});
         }
+
+        private static bool IsRichResponse => typeof(Response).IsAssignableFrom(typeof(TResponse));
     }
 }

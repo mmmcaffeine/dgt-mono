@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -17,9 +18,11 @@ namespace Dgt.CrmMicroservice.WebApi
             }
             catch (Exception exception)
             {
-                var response = Activator.CreateInstance<TResponse>();
-                response.Exception = exception;
-                return response;
+                const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                var parameterTypes = new[] {typeof(Exception)};
+                var ctor = typeof(TResponse).GetConstructor(bindingFlags, null, parameterTypes, null)!;
+
+                return (TResponse)ctor.Invoke(new object?[] {exception});
             }
         }
     }

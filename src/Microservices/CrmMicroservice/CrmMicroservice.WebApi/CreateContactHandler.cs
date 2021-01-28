@@ -30,7 +30,8 @@ namespace Dgt.CrmMicroservice.WebApi
             await _contactRepository.InsertContactAsync(contact, cancellationToken);
 
             var data = new CreateContactResponse {Id = contact.Id};
-            return new Response<CreateContactResponse> {Data = data};
+
+            return Response.Success(data);
         }
     }
 }
