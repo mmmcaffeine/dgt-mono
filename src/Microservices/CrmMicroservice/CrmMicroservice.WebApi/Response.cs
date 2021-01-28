@@ -5,10 +5,11 @@ namespace Dgt.CrmMicroservice.WebApi
 {
     public class Response
     {
+        // TODO We could do with finding a better way of dealing with this. Ideally this is not publicly settable
         // TODO You wouldn't want this getting serialized into the response!
         //      You might want to translate this into e.g. BadRequest, NotImplemented etc,
         //      but in most cases would be InternalServerError
-        public Exception? Exception { get; init; }
+        public Exception? Exception { get; set; }
 
         // TODO We could do with finding a better way of dealing with this. Ideally this is not publicly settable
         public ValidationResult? ValidationResult { get; set; }

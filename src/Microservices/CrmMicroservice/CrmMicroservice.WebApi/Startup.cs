@@ -42,6 +42,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<ITypedCache, TypedCache>();
 
             services.AddMediatR(GetType());
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CatchUnhandledExceptionsPipelineBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehaviour<,>));
             services.AddTransient<IValidator<CreateContactCommand>, CreateContactCommandValidator>();
 

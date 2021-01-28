@@ -18,26 +18,19 @@ namespace Dgt.CrmMicroservice.WebApi
 
         public async Task<Response<CreateContactResponse>> Handle(CreateContactCommand request, CancellationToken cancellationToken)
         {
-            try
+            var contact = new ContactEntity
             {
-                var contact = new ContactEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Title = request.Title,
-                    FirstName = request.FirstName,
-                    LastName = request.LastName,
-                    BranchId = request.BranchId
-                };
+                Id = Guid.NewGuid(),
+                Title = request.Title,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                BranchId = request.BranchId
+            };
 
-                await _contactRepository.InsertContactAsync(contact, cancellationToken);
+            await _contactRepository.InsertContactAsync(contact, cancellationToken);
 
-                var data = new CreateContactResponse {Id = contact.Id};
-                return new Response<CreateContactResponse> {Data = data};
-            }
-            catch (Exception exception)
-            {
-                return new Response<CreateContactResponse> {Exception = exception};
-            }
+            var data = new CreateContactResponse {Id = contact.Id};
+            return new Response<CreateContactResponse> {Data = data};
         }
     }
 }
