@@ -37,7 +37,17 @@ namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
 
             public async Task<Response<ResponseData>> Handle(Request request, CancellationToken cancellationToken)
             {
-                var contact = await _contactRepository.GetContactAsync(request.Id);
+                ContactEntity contact;
+
+                try
+                {
+                    contact = await _contactRepository.GetContactAsync(request.Id);
+                }
+                catch (ArgumentException exception) when (exception.Message.StartsWith("No entity with the supplied ID exists."))
+                {
+                    return Response.Empty<ResponseData>();
+                }
+
                 var data = new ResponseData
                 {
                     Id = contact.Id,

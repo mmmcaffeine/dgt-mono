@@ -24,7 +24,7 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
             var query = (GetContactByIdQuery.Request) id;
             var response = await _mediator.Send(query);
 
-            return response.CreateActionResult(this, x => new ObjectResult(x.Data));
+            return response.CreateActionResult(this, x => x.Data is null ? NotFound() : Ok(x.Data));
         }
 
         [HttpPost]

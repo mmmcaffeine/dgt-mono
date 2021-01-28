@@ -15,6 +15,7 @@ namespace Dgt.CrmMicroservice.WebApi
         internal Response(ValidationResult validationResult) => ValidationResult = validationResult;
 
         public static Response<TData> Success<TData>(TData? data) => new (data);
+        public static Response<TData> Empty<TData>() => new(default(TData?));
 
         internal static TResponse Failure<TResponse>(object failureData)
         {
