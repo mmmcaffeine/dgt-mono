@@ -6,18 +6,18 @@ using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 
-namespace Dgt.CrmMicroservice.WebApi
+namespace Dgt.CrmMicroservice.WebApi.PipelineBehaviors
 {
-    public class ValidateRequestPipelineBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    public class ValidateRequestPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull
     {
         private readonly IValidator<TRequest>? _validator;
 
-        public ValidateRequestPipelineBehaviour() : this(null)
+        public ValidateRequestPipelineBehavior() : this(null)
         {
         }
 
-        public ValidateRequestPipelineBehaviour(IValidator<TRequest>? validator)
+        public ValidateRequestPipelineBehavior(IValidator<TRequest>? validator)
         {
             _validator = validator;
         }

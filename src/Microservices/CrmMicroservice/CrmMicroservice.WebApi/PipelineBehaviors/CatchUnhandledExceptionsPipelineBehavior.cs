@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 
-namespace Dgt.CrmMicroservice.WebApi
+namespace Dgt.CrmMicroservice.WebApi.PipelineBehaviors
 {
-    public class CatchUnhandledExceptionsPipelineBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    public class CatchUnhandledExceptionsPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull
         where TResponse : Response
     {
