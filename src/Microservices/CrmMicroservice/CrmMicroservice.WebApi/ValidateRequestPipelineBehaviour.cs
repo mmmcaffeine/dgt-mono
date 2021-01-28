@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 
 namespace Dgt.CrmMicroservice.WebApi
@@ -23,20 +24,26 @@ namespace Dgt.CrmMicroservice.WebApi
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
-            if (_validator is null)
+            var validationResult = _validator != null
+                ? await _validator.ValidateAsync(request, cancellationToken)
+                : new ValidationResult();
+
+            if (validationResult.IsValid)
             {
                 return await next();
             }
 
-            var result = await _validator.ValidateAsync(request, cancellationToken);
-            var exceptions = result.Errors.Select(error => new InvalidOperationException(error.ErrorMessage)).ToList();
-
-            return exceptions.Count switch
+            if (request is not IRequest<Response>)
             {
-                0 => await next(),
-                1 => throw exceptions.Single(),
-                _ => throw new AggregateException("The request failed validation.", exceptions)
-            };
+                var exceptions = validationResult.Errors.Select(error => new InvalidOperationException(error.ErrorMessage)).ToList();
+                throw exceptions.Count == 1
+                    ? exceptions.Single()
+                    : new AggregateException("The request failed validation.", exceptions);
+            }
+
+            var response = Activator.CreateInstance<TResponse>();
+            typeof(Response).GetProperty(nameof(Response.ValidationResult))?.SetValue(response, validationResult);
+            return response;
         }
     }
 }

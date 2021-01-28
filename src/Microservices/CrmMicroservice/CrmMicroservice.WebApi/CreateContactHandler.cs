@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Dgt.CrmMicroservice.WebApi
 {
-    public class CreateContactHandler : IRequestHandler<CreateContactCommand, CreateContactResponse>
+    public class CreateContactHandler : IRequestHandler<CreateContactCommand, Response<CreateContactResponse>>
     {
         private readonly IContactRepository _contactRepository;
 
@@ -16,23 +16,28 @@ namespace Dgt.CrmMicroservice.WebApi
             _contactRepository = contactRepository.WhenNotNull(nameof(contactRepository));
         }
 
-        public async Task<CreateContactResponse> Handle(CreateContactCommand request, CancellationToken cancellationToken)
+        public async Task<Response<CreateContactResponse>> Handle(CreateContactCommand request, CancellationToken cancellationToken)
         {
-            var contact = new ContactEntity
+            try
             {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                BranchId = request.BranchId
-            };
+                var contact = new ContactEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Title = request.Title,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    BranchId = request.BranchId
+                };
 
-            await _contactRepository.InsertContactAsync(contact, cancellationToken);
+                await _contactRepository.InsertContactAsync(contact, cancellationToken);
 
-            return new CreateContactResponse
+                var data = new CreateContactResponse {Id = contact.Id};
+                return new Response<CreateContactResponse> {Data = data};
+            }
+            catch (Exception exception)
             {
-                Id = contact.Id
-            };
+                return new Response<CreateContactResponse> {Exception = exception};
+            }
         }
     }
 }

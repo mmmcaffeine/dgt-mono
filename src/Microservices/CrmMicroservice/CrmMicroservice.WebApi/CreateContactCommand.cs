@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Dgt.CrmMicroservice.WebApi
 {
-    public class CreateContactCommand : IRequest<CreateContactResponse>
+    public class CreateContactCommand : IRequest<Response<CreateContactResponse>>
     {
         public string? Title { get; init; }
         public string? FirstName { get; init; }
