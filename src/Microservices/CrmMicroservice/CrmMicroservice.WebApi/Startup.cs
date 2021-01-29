@@ -43,7 +43,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
             services.AddTransient<ITypedCache, TypedCache>();
 
-            services.AddMediatR(GetType());
+            services.AddMediatR(typeof(GetContactByIdQuery));
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CatchUnhandledExceptionsPipelineBehavior<,>));
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehavior<,>));
             services.AddTransient<IValidator<CreateContactCommand.Request>, CreateContactCommand.RequestValidator>();
