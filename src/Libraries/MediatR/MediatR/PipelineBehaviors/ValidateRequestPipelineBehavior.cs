@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,15 +31,9 @@ namespace Dgt.MediatR.PipelineBehaviors
                 return await next();
             }
 
-            if (!IsRichResponse)
-            {
-                var exceptions = validationResult.Errors.Select(error => new InvalidOperationException(error.ErrorMessage)).ToList();
-                throw exceptions.Count == 1
-                    ? exceptions.Single()
-                    : new AggregateException("The request failed validation.", exceptions);
-            }
-
-            return Response.Failure<TResponse>(validationResult);
+            return IsRichResponse
+                ? Response.Failure<TResponse>(validationResult)
+                : throw new ValidationException(validationResult.Errors);
         }
 
         private static bool IsRichResponse => typeof(Response).IsAssignableFrom(typeof(TResponse));

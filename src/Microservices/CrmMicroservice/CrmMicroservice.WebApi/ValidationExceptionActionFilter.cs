@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,30 +15,15 @@ namespace Dgt.CrmMicroservice.WebApi
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.Exception is null)
-            {
-                return;
-            }
+            if (!(context.Exception is ValidationException exception)) return;
+            if (!exception.Errors.Any()) return;
 
-            var validationExceptions = new List<Exception>();
             var modelState = new ModelStateDictionary();
 
-            // TODO This is brittle, particularly with respect to the pattern matching on the message
-            if (context.Exception is InvalidOperationException invalidOperationException)
+            foreach (var error in exception.Errors)
             {
-                validationExceptions.Add(invalidOperationException);
+                modelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
-            else if (context.Exception is AggregateException {Message: "The request failed validation."} aggregateException)
-            {
-                validationExceptions.AddRange(aggregateException.InnerExceptions);
-            }
-
-            if (!validationExceptions.Any())
-            {
-                return;
-            }
-
-            validationExceptions.ForEach(ex => modelState.AddModelError("Request", ex.Message));
 
             context.Result = context.Controller is ControllerBase controller
                 ? controller.ValidationProblem(modelState)
