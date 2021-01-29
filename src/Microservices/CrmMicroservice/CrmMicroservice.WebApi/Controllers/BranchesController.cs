@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
+using Dgt.CrmMicroservice.Domain.Operations.Branches;
+using Dgt.Extensions.Validation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dgt.CrmMicroservice.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BranchesController
+    public class BranchesController : ControllerBase
     {
-        private readonly IBranchRepository _branchRepository;
+        private readonly IMediator _mediator;
 
-        // TODO Validate not null
-        public BranchesController(IBranchRepository branchRepository)
+        public BranchesController(IMediator mediator)
         {
-            _branchRepository = branchRepository;
+            _mediator = mediator.WhenNotNull(nameof(mediator));
         }
 
         [HttpGet("{id:guid}")]
-        public Task<BranchEntity> Get(Guid id)
+        public async Task<ActionResult<BranchEntity>> Get(Guid id)
         {
-#pragma warning disable 618
-            return _branchRepository.GetBranchAsync(id);
-#pragma warning restore 618
+            var request = new GetBranchByIdQuery.Request(id);
+            var response = await _mediator.Send(request);
+
+            return response.CreateActionResult(this, x => x.Data is null ? NotFound() : Ok(x.Data));
         }
     }
 }
