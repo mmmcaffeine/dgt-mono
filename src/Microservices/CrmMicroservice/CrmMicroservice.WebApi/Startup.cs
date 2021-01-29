@@ -48,6 +48,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehavior<,>));
             services.AddTransient<IValidator<CreateContactCommand.Request>, CreateContactCommand.RequestValidator>();
             services.AddTransient<IValidator<GetContactsByNameQuery.Request>, GetContactsByNameQuery.RequestValidator>();
+            services.AddTransient<IValidator<DeleteContactByIdCommand.Request>, DeleteContactByIdCommand.RequestValidator>();
 
             services.AddStackExchangeRedisCache(options =>
             {
@@ -55,7 +56,10 @@ namespace Dgt.CrmMicroservice.WebApi
                 options.InstanceName = "crm:";
             });
 
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<ValidationExceptionActionFilter>();
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "CrmMicroservice.WebApi", Version = "v1"});

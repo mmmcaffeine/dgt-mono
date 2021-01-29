@@ -21,6 +21,15 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
             _mediator = mediator.WhenNotNull(nameof(mediator));
         }
 
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var request = new DeleteContactByIdCommand.Request(id);
+            _ = await _mediator.Send(request);
+
+            return NoContent();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ContactEntity>> Get(Guid id)
         {
