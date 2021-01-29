@@ -20,7 +20,9 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
         [HttpGet("{id:guid}")]
         public Task<BranchEntity> Get(Guid id)
         {
+#pragma warning disable 618
             return _branchRepository.GetBranchAsync(id);
+#pragma warning restore 618
         }
     }
 }

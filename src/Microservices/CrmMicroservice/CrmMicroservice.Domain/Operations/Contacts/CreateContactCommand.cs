@@ -31,7 +31,9 @@ namespace Dgt.CrmMicroservice.Domain.Operations.Contacts
                 {
                     try
                     {
+#pragma warning disable 618
                         _ = await branchRepository.GetBranchAsync(branchId);
+#pragma warning restore 618
 
                         return true;
                     }
