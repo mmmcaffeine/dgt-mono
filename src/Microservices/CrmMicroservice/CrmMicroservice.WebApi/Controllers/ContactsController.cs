@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
-using Dgt.CrmMicroservice.WebApi.Operations.Contacts;
+using Dgt.CrmMicroservice.Domain.Operations.Contacts;
 using Dgt.Extensions.Validation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
 using Dgt.MediatR;
 using FluentValidation;
 using MediatR;
 
-namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
+namespace Dgt.CrmMicroservice.Domain.Operations.Contacts
 {
     public sealed class CreateContactCommand
     {

@@ -23,4 +23,8 @@
         <WarningLevel>5</WarningLevel>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Libraries\MediatR\MediatR\MediatR.csproj" />
+    </ItemGroup>
+
 </Project>
