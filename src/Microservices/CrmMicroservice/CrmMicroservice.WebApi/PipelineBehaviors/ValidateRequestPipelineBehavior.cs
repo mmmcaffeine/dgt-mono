@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dgt.Extensions.Validation;
 using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
@@ -11,22 +13,19 @@ namespace Dgt.CrmMicroservice.WebApi.PipelineBehaviors
     public class ValidateRequestPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull
     {
-        private readonly IValidator<TRequest>? _validator;
+        private readonly IEnumerable<IValidator<TRequest>> _validators;
 
-        public ValidateRequestPipelineBehavior() : this(null)
+        public ValidateRequestPipelineBehavior(IEnumerable<IValidator<TRequest>> validators)
         {
-        }
-
-        public ValidateRequestPipelineBehavior(IValidator<TRequest>? validator)
-        {
-            _validator = validator;
+            _validators = validators.WhenNotNull(nameof(validators));
         }
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
-            var validationResult = _validator != null
-                ? await _validator.ValidateAsync(request, cancellationToken)
-                : new ValidationResult();
+            var validationContext = new ValidationContext<TRequest>(request);
+            var validationTasks = _validators.Select(validator => validator.ValidateAsync(validationContext, cancellationToken));
+            var validationResults = await Task.WhenAll(validationTasks);
+            var validationResult = new ValidationResult(validationResults.SelectMany(x => x.Errors));
 
             if (validationResult.IsValid)
             {
