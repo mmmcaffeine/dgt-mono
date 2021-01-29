@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
@@ -13,21 +15,21 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
 {
     public class FileBasedContactRepository : IContactRepository
     {
-        private class ContactDto
+        private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy
         {
-            public Guid Id { get; init; }
-
-            public string? Title { get; init; }
-
-            [JsonPropertyName("first_name")]
-            public string? FirstName { get; init; }
-
-            [JsonPropertyName("last_name")]
-            public string? LastName { get; init; }
-
-            [JsonPropertyName("branch_id")]
-            public Guid BranchId { get; init; }
-
+            private const string SplitWordsPattern = "((?<=[a-z])[A-Z]|(?<!^)[A-Z](?=[a-z]))";
+            
+            public override string ConvertName(string name)
+            {
+                return string.IsNullOrWhiteSpace(name)
+                    ? name
+                    : Regex.Replace(name, SplitWordsPattern, x => $"_{x.Value}").ToLowerInvariant();
+            }
+        }
+        
+        private record ContactDto(Guid Id, string? Title, string? FirstName, string? LastName, Guid BranchId)
+        {
+            [return: NotNullIfNotNull("dto")]
             public static explicit operator ContactEntity?(ContactDto? dto)
             {
                 if (dto is null)
@@ -44,7 +46,32 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
                     BranchId = dto.BranchId
                 };
             }
+
+            [return: NotNullIfNotNull("entity")]
+            public static explicit operator ContactDto?(ContactEntity? entity)
+            {
+                if (entity is null)
+                {
+                    return null;
+                }
+
+                return new ContactDto
+                (
+                    entity.Id,
+                    entity.Title,
+                    entity.FirstName,
+                    entity.LastName,
+                    entity.BranchId
+                );
+            }
         }
+
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = new SnakeCaseJsonNamingPolicy()
+        };
 
         private readonly string _path;
         private readonly int _delay;
@@ -58,23 +85,40 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             (_path, _delay) = options;
         }
 
-        // For now we have the same shape as the ContactEntity so we _could_ deserialize directly into that
+        public async Task<IQueryable<ContactEntity>> GetContactsAsync(CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(_delay, cancellationToken);
+
+            var json = await File.ReadAllTextAsync(_path, cancellationToken);
+            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions)!;
+
+            return dtos.Select(dto => (ContactEntity) dto).AsQueryable();
+        }
+
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
             await Task.Delay(_delay);
 
             var json = await File.ReadAllTextAsync(_path);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, options);
+            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions);
 
             // TODO Exception handling
-            // No matches
             // Multiple matches (FUBAR source data)
-            // Nulls (I've basic mangled the NRT feature here...)
-            return (ContactEntity) dtos?.First()!;
+            return (ContactEntity) (dtos?.FirstOrDefault(dto => dto.Id == id)
+                   ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id)));
+        }
+
+        public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(_delay, cancellationToken);
+            await using var stream = File.Open(_path, FileMode.Open, FileAccess.ReadWrite);
+
+            var dtos = (await JsonSerializer.DeserializeAsync<List<ContactDto>>(stream, JsonSerializerOptions, cancellationToken))!;
+
+            dtos.Add((ContactDto) contact);
+            stream.SetLength(0);
+
+            await JsonSerializer.SerializeAsync(stream, dtos, JsonSerializerOptions, cancellationToken);
         }
     }
 }

@@ -25,6 +25,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.1" />
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.1" />
@@ -33,6 +34,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Libraries\Caching\Caching\Caching.csproj" />
+      <ProjectReference Include="..\..\..\Libraries\MediatR\MediatR\MediatR.csproj" />
       <ProjectReference Include="..\..\..\Libraries\Options\Options\Options.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Domain\CrmMicroservice.Domain.csproj" />
       <ProjectReference Include="..\CrmMicroservice.Infrastructure.Caching\CrmMicroservice.Infrastructure.Caching.csproj" />

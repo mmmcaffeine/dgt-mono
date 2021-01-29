@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
@@ -15,6 +18,12 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         {
             _contactRepository = contactRepository.WhenNotNull(nameof(contactRepository));
             _cache = cache.WhenNotNull(nameof(cache));
+        }
+
+        // QUESTION If our repository only ever returns the queryable where would we move caching to?
+        public Task<IQueryable<ContactEntity>> GetContactsAsync(CancellationToken cancellationToken = default)
+        {
+            return _contactRepository.GetContactsAsync(cancellationToken);
         }
 
         // ENHANCE You might want some sort of circuit breaker for the cache in here
@@ -39,6 +48,14 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             }
 
             return contact;
+        }
+
+        public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
+        {
+            var key = $"{nameof(ContactEntity)}:{contact.Id}".ToLowerInvariant();
+
+            await _contactRepository.InsertContactAsync(contact, cancellationToken);
+            await _cache.SetRecordAsync(key, contact);
         }
     }
 }

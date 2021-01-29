@@ -1,8 +1,12 @@
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
+using Dgt.CrmMicroservice.Domain.Operations.Contacts;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
+using Dgt.MediatR.PipelineBehaviors;
 using Dgt.Options;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -39,13 +43,23 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient<IBranchRepository, FileBasedBranchRepository>();
             services.AddTransient<ITypedCache, TypedCache>();
 
+            services.AddMediatR(GetType());
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CatchUnhandledExceptionsPipelineBehavior<,>));
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehavior<,>));
+            services.AddTransient<IValidator<CreateContactCommand.Request>, CreateContactCommand.RequestValidator>();
+            services.AddTransient<IValidator<GetContactsByNameQuery.Request>, GetContactsByNameQuery.RequestValidator>();
+            services.AddTransient<IValidator<DeleteContactByIdCommand.Request>, DeleteContactByIdCommand.RequestValidator>();
+
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = _configuration.GetConnectionString("Redis");
                 options.InstanceName = "crm:";
             });
 
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<ValidationExceptionActionFilter>();
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "CrmMicroservice.WebApi", Version = "v1"});

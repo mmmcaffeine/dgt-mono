@@ -2,17 +2,17 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <AssemblyName>Dgt.CrmMicroservice.Domain</AssemblyName>
-        <RootNamespace>Dgt.CrmMicroservice.Domain</RootNamespace>
+        <AssemblyName>Dgt.MediatR</AssemblyName>
+        <RootNamespace>Dgt.MediatR</RootNamespace>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-      <WarningsAsErrors />
-      <NoWarn />
-      <DefineConstants>DEBUG;TRACE</DefineConstants>
-      <WarningLevel>5</WarningLevel>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -24,7 +24,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Libraries\MediatR\MediatR\MediatR.csproj" />
+        <PackageReference Include="FluentValidation" Version="9.3.0" />
+        <PackageReference Include="MediatR" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Extensions\Extensions\Extensions.csproj" />
     </ItemGroup>
 
 </Project>
