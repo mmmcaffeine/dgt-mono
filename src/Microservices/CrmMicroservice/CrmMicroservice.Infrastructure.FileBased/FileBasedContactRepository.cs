@@ -85,6 +85,16 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             (_path, _delay) = options;
         }
 
+        public async Task<IQueryable<ContactEntity>> GetContactsAsync(CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(_delay, cancellationToken);
+
+            var json = await File.ReadAllTextAsync(_path, cancellationToken);
+            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions)!;
+
+            return dtos.Select(dto => (ContactEntity) dto).AsQueryable();
+        }
+
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
             await Task.Delay(_delay);

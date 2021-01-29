@@ -27,6 +27,14 @@ namespace Dgt.CrmMicroservice.WebApi.Controllers
             return response.CreateActionResult(this, x => x.Data is null ? NotFound() : Ok(x.Data));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get([FromQuery] GetContactsByNameQuery.Request query)
+        {
+            var response = await _mediator.Send(query);
+
+            return response.CreateActionResult(this, x => Ok(x.Data));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateContactCommand.Request request)
         {

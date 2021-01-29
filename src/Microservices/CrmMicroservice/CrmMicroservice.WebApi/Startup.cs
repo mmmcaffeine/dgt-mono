@@ -47,6 +47,7 @@ namespace Dgt.CrmMicroservice.WebApi
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CatchUnhandledExceptionsPipelineBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidateRequestPipelineBehavior<,>));
             services.AddTransient<IValidator<CreateContactCommand.Request>, CreateContactCommand.RequestValidator>();
+            services.AddTransient<IValidator<GetContactsByNameQuery.Request>, GetContactsByNameQuery.RequestValidator>();
 
             services.AddStackExchangeRedisCache(options =>
             {
