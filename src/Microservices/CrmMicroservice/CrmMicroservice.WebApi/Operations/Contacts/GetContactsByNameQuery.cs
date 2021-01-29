@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
         // TODO Condition must be a member of the enumeration
         // TODO Honour the Condition property
         // TODO Include boolean for case sensitivity
-        public class Request : IRequest<Response<IEnumerable<ResponseData>>>
+        public class Request : IRequest<Response<IEnumerable<ContactEntity>>>
         {
             public string? FirstName { get; set; }
             public string? LastName { get; set; }
@@ -43,17 +42,7 @@ namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
             }
         }
 
-        // TODO This is the same as in GetContactByIdQuery. Remove the duplication
-        public class ResponseData
-        {
-            public Guid Id { get; init; }
-            public string? Title { get; init; }
-            public string? FirstName { get; init; }
-            public string? LastName { get; init; }
-            public Guid BranchId { get; init; }
-        }
-
-        public class Handler : IRequestHandler<Request, Response<IEnumerable<ResponseData>>>
+        public class Handler : IRequestHandler<Request, Response<IEnumerable<ContactEntity>>>
         {
             private readonly IContactRepository _contactRepository;
 
@@ -64,7 +53,7 @@ namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
 
             // REM This could be a problem. When working with an IQueryable you don't know if the underlying type will
             //     support the expression tree you are building up.
-            public async Task<Response<IEnumerable<ResponseData>>> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<Response<IEnumerable<ContactEntity>>> Handle(Request request, CancellationToken cancellationToken)
             {
                 var contacts = await _contactRepository.GetContactsAsync(cancellationToken);
 
@@ -82,19 +71,7 @@ namespace Dgt.CrmMicroservice.WebApi.Operations.Contacts
                         : contacts.Where(contact => string.Equals(contact.LastName, request.LastName));
                 }
 
-                return Response.Success(contacts.Select(contact => CreateResponseData(contact)).AsEnumerable());
-            }
-
-            private static ResponseData CreateResponseData(ContactEntity contact)
-            {
-                return new()
-                {
-                    Id = contact.Id,
-                    Title = contact.Title,
-                    FirstName = contact.FirstName,
-                    LastName = contact.LastName,
-                    BranchId = contact.BranchId
-                };
+                return Response.Success(contacts.AsEnumerable());
             }
         }
     }

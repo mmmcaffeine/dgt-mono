@@ -12,10 +12,10 @@ namespace Dgt.CrmMicroservice.WebApi
     {
         private const int InternalServerError = (int) HttpStatusCode.InternalServerError;
 
-        public static IActionResult CreateActionResult<TData>(
+        public static ActionResult<TData> CreateActionResult<TData>(
             this Response<TData> response,
             ControllerBase controller,
-            Func<Response<TData>, IActionResult> onSuccess)
+            Func<Response<TData>, ActionResult<TData>> onSuccess)
         {
             _ = response.WhenNotNull(nameof(response));
             _ = onSuccess.WhenNotNull(nameof(response));
