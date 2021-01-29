@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
+using Dgt.MediatR;
 using FluentValidation;
 using MediatR;
 

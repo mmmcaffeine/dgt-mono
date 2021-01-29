@@ -2,7 +2,7 @@
 using System.Reflection;
 using FluentValidation.Results;
 
-namespace Dgt.CrmMicroservice.WebApi
+namespace Dgt.MediatR
 {
     public class Response
     {
@@ -25,9 +25,6 @@ namespace Dgt.CrmMicroservice.WebApi
             return (TResponse) ctor.Invoke(new[] {failureData});
         }
 
-        // TODO You wouldn't want this getting serialized into the response!
-        //      You might want to translate this into e.g. BadRequest, NotImplemented etc,
-        //      but in most cases would be InternalServerError
         public Exception? Exception { get; }
         public ValidationResult? ValidationResult { get; }
 

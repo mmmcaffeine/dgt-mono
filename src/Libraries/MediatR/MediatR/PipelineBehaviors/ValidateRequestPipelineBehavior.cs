@@ -8,7 +8,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 
-namespace Dgt.CrmMicroservice.WebApi.PipelineBehaviors
+namespace Dgt.MediatR.PipelineBehaviors
 {
     public class ValidateRequestPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull

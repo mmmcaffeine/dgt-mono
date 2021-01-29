@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Net;
 using Dgt.Extensions.Validation;
+using Dgt.MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dgt.CrmMicroservice.WebApi
 {
-    // REM We're intending to move Response into its own library, hence writing this is an extension method
     public static class ResponseExtensions
     {
         private const int InternalServerError = (int) HttpStatusCode.InternalServerError;

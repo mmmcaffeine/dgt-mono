@@ -3,7 +3,7 @@ using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using Dgt.CrmMicroservice.Infrastructure.FileBased;
 using Dgt.CrmMicroservice.WebApi.Operations.Contacts;
-using Dgt.CrmMicroservice.WebApi.PipelineBehaviors;
+using Dgt.MediatR.PipelineBehaviors;
 using Dgt.Options;
 using FluentValidation;
 using MediatR;
