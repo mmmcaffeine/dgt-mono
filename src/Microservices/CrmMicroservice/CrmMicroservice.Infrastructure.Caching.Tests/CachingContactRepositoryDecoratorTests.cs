@@ -6,6 +6,7 @@ using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using FluentAssertions;
 using Moq;
+using StackExchange.Redis;
 using Xunit;
 
 namespace CrmMicroservice.Infrastructure.Caching
@@ -124,8 +125,9 @@ namespace CrmMicroservice.Infrastructure.Caching
             var id = Guid.NewGuid();
             var expected = new ContactEntity {Id = id};
 
-            _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
-                .ThrowsAsync(new Exception("Kaboom!"));
+            _cacheMock
+                .Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+                .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"));
             _contactRepositoryMock
                 .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
@@ -146,7 +148,7 @@ namespace CrmMicroservice.Infrastructure.Caching
 
             _cacheMock
                 .Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
-                .ThrowsAsync(new Exception("Kaboom!"));
+                .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"));
             _contactRepositoryMock
                 .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(contact);

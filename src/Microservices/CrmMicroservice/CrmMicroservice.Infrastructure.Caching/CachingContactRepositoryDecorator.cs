@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
+using Polly;
+using StackExchange.Redis;
 
 namespace Dgt.CrmMicroservice.Infrastructure.Caching
 {
@@ -13,11 +15,21 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
     {
         private readonly IContactRepository _contactRepository;
         private readonly ITypedCache _cache;
+        private readonly IAsyncPolicy<ContactEntity?> _getContactPolicy;
 
         public CachingContactRepositoryDecorator(IContactRepository contactRepository, ITypedCache cache)
         {
             _contactRepository = contactRepository.WhenNotNull(nameof(contactRepository));
             _cache = cache.WhenNotNull(nameof(cache));
+
+            var getPolicy = Policy<ContactEntity?>
+                .Handle<RedisConnectionException>()
+                .FallbackAsync(GetContactFromRepositoryAsync, (_, _) => Task.CompletedTask);
+            var getAndCachePolicy = Policy<ContactEntity?>
+                .HandleResult((ContactEntity?) null)
+                .FallbackAsync(GetContactFromRepositoryAndCacheAsync, (_, _) => Task.CompletedTask);
+
+            _getContactPolicy = Policy.WrapAsync(getAndCachePolicy, getPolicy);
         }
 
         // QUESTION If our repository only ever returns the queryable where would we move caching to?
@@ -30,24 +42,25 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         public async Task<ContactEntity?> GetContactAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var key = GetCacheKey(id);
-            ContactEntity? contact; 
-
-            try
+            var context = new Context($"Get Contact {id}")
             {
-                contact = await _cache.GetRecordAsync<ContactEntity>(key);
-            }
-            catch
-            {
-                return await _contactRepository.GetContactAsync(id, cancellationToken);
-            }
+                {"id", id},
+                {"key", key}
+            };
 
-            if (contact is null)
-            {
-                contact = await _contactRepository.GetContactAsync(id, cancellationToken);
-                await SafeCacheContact(contact, cancellationToken);
-            }
+            return await _getContactPolicy.ExecuteAsync((_, _) => _cache.GetRecordAsync<ContactEntity>(key), context, cancellationToken);
+        }
 
+        private async Task<ContactEntity?> GetContactFromRepositoryAndCacheAsync(Context context, CancellationToken cancellationToken = default)
+        {
+            var contact = await GetContactFromRepositoryAsync(context, cancellationToken);
+            await SafeCacheContact(contact, cancellationToken);
             return contact;
+        }
+
+        private async Task<ContactEntity?> GetContactFromRepositoryAsync(Context context, CancellationToken cancellationToken = default)
+        {
+            return await _contactRepository.GetContactAsync((Guid) context["id"], cancellationToken);
         }
 
         // ENHANCE You might want some sort of circuit breaker for the cache in here
