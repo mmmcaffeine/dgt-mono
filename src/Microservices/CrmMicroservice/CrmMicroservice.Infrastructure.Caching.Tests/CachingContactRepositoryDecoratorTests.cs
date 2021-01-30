@@ -77,6 +77,23 @@ namespace CrmMicroservice.Infrastructure.Caching
         }
 
         [Fact]
+        public async Task GetContactAsync_Should_NotThrow_When_CachingContactFails()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+            var contact = new ContactEntity {Id = id};
+
+            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(contact);
+            _cacheMock
+                .Setup(cache => cache.SetRecordAsync(key, contact, It.IsAny<TimeSpan?>(), It.IsAny<TimeSpan?>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+
+            // Act, Assert
+            await _sut.Invoking(repo => repo.GetContactAsync(id)).Should().NotThrowAsync();
+        }
+
+        [Fact]
         public async Task GetContactAsync_Should_GetContactFromCache_When_ContactIsCached()
         {
             // Arrange
@@ -237,6 +254,22 @@ namespace CrmMicroservice.Infrastructure.Caching
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<TimeSpan?>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task InsertContactAsync_Should_NotThrow_When_CachingContactFails()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+            var contact = new ContactEntity {Id = id};
+
+            _cacheMock
+                .Setup(cache => cache.SetRecordAsync(key, contact, It.IsAny<TimeSpan?>(), It.IsAny<TimeSpan?>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+
+            // Act, Assert
+            await _sut.Invoking(repo => repo.InsertContactAsync(contact)).Should().NotThrowAsync();
         }
     }
 }

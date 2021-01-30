@@ -44,18 +44,36 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             if (contact is null)
             {
                 contact = await _contactRepository.GetContactAsync(id);
-                await _cache.SetRecordAsync(key, contact);
+
+                try
+                {
+                    await _cache.SetRecordAsync(key, contact);
+                }
+                catch
+                {
+                    // REM Deliberately suppress exceptions. We don't want inserting something in the cache to be a failure
+                    //     because we have actually been able to get the contact
+                }
             }
 
             return contact;
         }
 
+        // ENHANCE You might want some sort of circuit breaker for the cache in here
         public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
         {
             var key = $"{nameof(ContactEntity)}:{contact.Id}".ToLowerInvariant();
 
             await _contactRepository.InsertContactAsync(contact, cancellationToken);
-            await _cache.SetRecordAsync(key, contact);
+            try
+            {
+                await _cache.SetRecordAsync(key, contact);
+            }
+            catch
+            {
+                // REM Deliberately suppress exceptions. We don't want inserting something in the cache to be a failure
+                //     if the insert has actually succeeded
+            }
         }
     }
 }
