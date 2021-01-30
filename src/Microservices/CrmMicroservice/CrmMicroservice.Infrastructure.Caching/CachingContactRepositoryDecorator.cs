@@ -29,7 +29,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         // ENHANCE You might want some sort of circuit breaker for the cache in here
         public async Task<ContactEntity> GetContactAsync(Guid id)
         {
-            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+            var key = GetCacheKey(id);
             ContactEntity? contact; 
 
             try
@@ -44,16 +44,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             if (contact is null)
             {
                 contact = await _contactRepository.GetContactAsync(id);
-
-                try
-                {
-                    await _cache.SetRecordAsync(key, contact);
-                }
-                catch
-                {
-                    // REM Deliberately suppress exceptions. We don't want inserting something in the cache to be a failure
-                    //     because we have actually been able to get the contact
-                }
+                await SafeCacheContact(contact);
             }
 
             return contact;
@@ -62,18 +53,23 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         // ENHANCE You might want some sort of circuit breaker for the cache in here
         public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)
         {
-            var key = $"{nameof(ContactEntity)}:{contact.Id}".ToLowerInvariant();
-
             await _contactRepository.InsertContactAsync(contact, cancellationToken);
+            await SafeCacheContact(contact, cancellationToken);
+        }
+
+        private async Task SafeCacheContact(ContactEntity contact, CancellationToken cancellationToken = default)
+        {
             try
             {
-                await _cache.SetRecordAsync(key, contact);
+                await _cache.SetRecordAsync(GetCacheKey(contact), contact);
             }
             catch
             {
                 // REM Deliberately suppress exceptions. We don't want inserting something in the cache to be a failure
-                //     if the insert has actually succeeded
             }
         }
+
+        private static string GetCacheKey(ContactEntity contact) => GetCacheKey(contact.Id);
+        private static string GetCacheKey(Guid id) => $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
     }
 }
