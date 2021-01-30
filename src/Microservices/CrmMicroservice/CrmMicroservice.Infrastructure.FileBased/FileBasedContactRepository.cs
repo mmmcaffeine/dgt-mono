@@ -95,17 +95,15 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             return dtos.Select(dto => (ContactEntity) dto).AsQueryable();
         }
 
-        public async Task<ContactEntity> GetContactAsync(Guid id)
+        public async Task<ContactEntity?> GetContactAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            await Task.Delay(_delay);
+            await Task.Delay(_delay, cancellationToken);
 
-            var json = await File.ReadAllTextAsync(_path);
-            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions);
+            var json = await File.ReadAllTextAsync(_path, cancellationToken);
+            var dtos = JsonSerializer.Deserialize<List<ContactDto>>(json, JsonSerializerOptions)!;
+            var dto = dtos.FirstOrDefault(x => x.Id == id);
 
-            // TODO Exception handling
-            // Multiple matches (FUBAR source data)
-            return (ContactEntity) (dtos?.FirstOrDefault(dto => dto.Id == id)
-                   ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id)));
+            return dto is not null ? (ContactEntity) dto : null;
         }
 
         public async Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default)

@@ -27,7 +27,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         }
 
         // ENHANCE You might want some sort of circuit breaker for the cache in here
-        public async Task<ContactEntity> GetContactAsync(Guid id)
+        public async Task<ContactEntity?> GetContactAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var key = GetCacheKey(id);
             ContactEntity? contact; 
@@ -38,13 +38,13 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             }
             catch
             {
-                return await _contactRepository.GetContactAsync(id);
+                return await _contactRepository.GetContactAsync(id, cancellationToken);
             }
 
             if (contact is null)
             {
-                contact = await _contactRepository.GetContactAsync(id);
-                await SafeCacheContact(contact);
+                contact = await _contactRepository.GetContactAsync(id, cancellationToken);
+                await SafeCacheContact(contact, cancellationToken);
             }
 
             return contact;
@@ -57,8 +57,10 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             await SafeCacheContact(contact, cancellationToken);
         }
 
-        private async Task SafeCacheContact(ContactEntity contact, CancellationToken cancellationToken = default)
+        private async Task SafeCacheContact(ContactEntity? contact, CancellationToken cancellationToken = default)
         {
+            if(contact is null) return;
+            
             try
             {
                 await _cache.SetRecordAsync(GetCacheKey(contact), contact);

@@ -13,7 +13,7 @@ namespace Dgt.CrmMicroservice.Domain
         //          extensions in Entity Framework. Can we even make Clean Architecture and Vertical Slice
         //          architecture play nicely together?
         Task<IQueryable<ContactEntity>> GetContactsAsync(CancellationToken cancellationToken = default);
-        Task<ContactEntity> GetContactAsync(Guid id);
+        Task<ContactEntity?> GetContactAsync(Guid id, CancellationToken cancellationToken = default);
         Task InsertContactAsync([NotNull] ContactEntity contact, CancellationToken cancellationToken = default);
     }
 }

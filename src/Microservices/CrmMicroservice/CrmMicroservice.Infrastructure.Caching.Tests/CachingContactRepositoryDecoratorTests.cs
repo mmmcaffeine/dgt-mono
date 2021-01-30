@@ -48,9 +48,12 @@ namespace CrmMicroservice.Infrastructure.Caching
             var id = Guid.NewGuid();
             var expected = new ContactEntity {Id = id};
 
-            _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+            _cacheMock
+                .Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
                 .ReturnsAsync((ContactEntity?) null);
-            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(expected);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
             // Act
             var actual = await _sut.GetContactAsync(id);
@@ -67,7 +70,9 @@ namespace CrmMicroservice.Infrastructure.Caching
             var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
             var expected = new ContactEntity {Id = id};
 
-            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(expected);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
             // Act
             _ = await _sut.GetContactAsync(id);
@@ -84,7 +89,9 @@ namespace CrmMicroservice.Infrastructure.Caching
             var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
             var contact = new ContactEntity {Id = id};
 
-            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(contact);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(contact);
             _cacheMock
                 .Setup(cache => cache.SetRecordAsync(key, contact, It.IsAny<TimeSpan?>(), It.IsAny<TimeSpan?>()))
                 .ThrowsAsync(new Exception("Kaboom!"));
@@ -119,7 +126,9 @@ namespace CrmMicroservice.Infrastructure.Caching
 
             _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
                 .ThrowsAsync(new Exception("Kaboom!"));
-            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(expected);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
             // Act
             var actual = await _sut.GetContactAsync(id);
@@ -135,9 +144,12 @@ namespace CrmMicroservice.Infrastructure.Caching
             var id = Guid.NewGuid();
             var contact = new ContactEntity {Id = id};
 
-            _cacheMock.Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+            _cacheMock
+                .Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
                 .ThrowsAsync(new Exception("Kaboom!"));
-            _contactRepositoryMock.Setup(repo => repo.GetContactAsync(id)).ReturnsAsync(contact);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(contact);
 
             // Act
             _ = await _sut.GetContactAsync(id);
@@ -165,7 +177,7 @@ namespace CrmMicroservice.Infrastructure.Caching
             _ = await _sut.GetContactAsync(id);
 
             // Assert
-            _contactRepositoryMock.Verify(repo => repo.GetContactAsync(It.IsAny<Guid>()), Times.Never);
+            _contactRepositoryMock.Verify(repo => repo.GetContactAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
