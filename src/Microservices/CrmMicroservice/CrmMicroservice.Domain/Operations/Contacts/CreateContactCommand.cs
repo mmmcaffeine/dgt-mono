@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Dgt.CrmMicroservice.Domain.Operations.Branches;
 using Dgt.Extensions.Validation;
 using Dgt.MediatR;
 using FluentValidation;
@@ -20,27 +21,18 @@ namespace Dgt.CrmMicroservice.Domain.Operations.Contacts
 
         public class RequestValidator : AbstractValidator<Request>
         {
-            public RequestValidator(IBranchRepository branchRepository)
+            public RequestValidator(IMediator mediator)
             {
-                _ = branchRepository.WhenNotNull();
+                _ = mediator.WhenNotNull(nameof(Mediator));
 
                 RuleFor(x => x.Title).NotEmpty();
                 RuleFor(x => x.FirstName).NotEmpty();
                 RuleFor(x => x.LastName).NotEmpty();
                 RuleFor(x => x.BranchId).MustAsync(async (branchId, token) =>
                 {
-                    try
-                    {
-#pragma warning disable 618
-                        _ = await branchRepository.GetBranchAsync(branchId);
-#pragma warning restore 618
+                    var response = await mediator.Send(new GetBranchByIdQuery.Request(branchId), token);
 
-                        return true;
-                    }
-                    catch
-                    {
-                        return false;
-                    }
+                    return response.Data is not null;
                 }).WithMessage("Branch does not exist.");
             }
         }
