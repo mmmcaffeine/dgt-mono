@@ -42,15 +42,6 @@ namespace Dgt.CrmMicroservice.Infrastructure.FileBased
             (_path, _delay) = options;
         }
 
-        public async Task<BranchEntity> GetBranchAsync(Guid id)
-        {
-            var entities = await GetBranchesAsync();
-
-            // TODO Better exception handling e.g. multiple matches
-            return entities.SingleOrDefault(x => x.Id == id)
-                ?? throw new ArgumentException("No entity with the supplied ID exists.", nameof(id));
-        }
-
         public async Task<IQueryable<BranchEntity>> GetBranchesAsync(CancellationToken cancellationToken = default)
         {
             await Task.Delay(_delay, cancellationToken);
