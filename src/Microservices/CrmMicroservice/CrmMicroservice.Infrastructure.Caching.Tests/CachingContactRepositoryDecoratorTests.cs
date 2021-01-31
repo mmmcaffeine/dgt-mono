@@ -5,6 +5,7 @@ using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.CrmMicroservice.Infrastructure.Caching;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using StackExchange.Redis;
 using Xunit;
@@ -15,18 +16,19 @@ namespace CrmMicroservice.Infrastructure.Caching
     {
         private readonly Mock<IContactRepository> _contactRepositoryMock = new();
         private readonly Mock<ITypedCache> _cacheMock = new();
+        private readonly CircuitBreakerOptions _options = new() {Attempts = 3, Duration = TimeSpan.FromMilliseconds(100)};
         private readonly IContactRepository _sut;
 
         public CachingContactRepositoryDecoratorTests()
         {
-            _sut = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, _cacheMock.Object);
+            _sut = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, _cacheMock.Object, _options);
         }
 
         [Fact]
         public void Ctor_Should_Throw_When_ContactRepositoryIsNull()
         {
             // Arrange
-            Action action = () => _ = new CachingContactRepositoryDecorator(null!, _cacheMock.Object);
+            Action action = () => _ = new CachingContactRepositoryDecorator(null!, _cacheMock.Object, _options);
             
             // Act, Assert
             action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("contactRepository");
@@ -36,11 +38,37 @@ namespace CrmMicroservice.Infrastructure.Caching
         public void Ctor_Should_Throw_When_CacheIsNull()
         {
             // Arrange
-            Action action = () => _ = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, null!);
+            Action action = () => _ = new CachingContactRepositoryDecorator(_contactRepositoryMock.Object, null!, _options);
             
             // Act, Assert
             action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("cache");
         }
+
+        [Fact]
+        public void Ctor_Should_Throw_When_OptionsIsNull()
+        {
+            // Arrange
+            Action action = () => _ = new CachingContactRepositoryDecorator(
+                _contactRepositoryMock.Object,
+                _cacheMock.Object,
+                (CircuitBreakerOptions) null!);
+
+            // Act, Assert
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("options");
+        }
+        
+        [Fact]
+        public void Ctor_Should_Throw_When_OptionsSnapshotIsNull()
+        {
+            // Arrange
+            Action action = () => _ = new CachingContactRepositoryDecorator(
+                _contactRepositoryMock.Object,
+                _cacheMock.Object,
+                (IOptionsSnapshot<CircuitBreakerOptions>) null!);
+
+            // Act, Assert
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("optionsSnapshot");
+        } 
 
         [Fact]
         public async Task GetContactAsync_Should_GetContactFromRepository_When_ContactIsNotCached()
@@ -151,11 +179,15 @@ namespace CrmMicroservice.Infrastructure.Caching
                 .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"));
 
             // Act
-            _ = await _sut.GetContactAsync(id);
+            for (var i = 0; i < _options.Attempts; i++)
+            {
+                _ = await _sut.GetContactAsync(id);
+            }
+
             _ = await _sut.GetContactAsync(id);
 
             // Assert
-            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Once);
+            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Exactly(_options.Attempts));
         }
 
         [Fact]
@@ -166,22 +198,29 @@ namespace CrmMicroservice.Infrastructure.Caching
             var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
             var contact = new ContactEntity {Id = id};
 
-            _cacheMock
-                .SetupSequence(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
-                .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"))
-                .ReturnsAsync(contact);
+            var sequence = _cacheMock.SetupSequence(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()));
+            for (var i = 0; i < _options.Attempts; i++)
+            {
+                sequence = sequence.ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"));
+            }
+            sequence.ReturnsAsync(contact);
+
             _contactRepositoryMock
                 .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(contact);
 
             // Act
-            _ = await _sut.GetContactAsync(id);
-            await Task.Delay(1000 + 5);
+            for (var i = 0; i < _options.Attempts; i++)
+            {
+                _ = await _sut.GetContactAsync(id);
+            }
+
+            await Task.Delay(_options.Duration.Add(TimeSpan.FromMilliseconds(10)));
             _ = await _sut.GetContactAsync(id);
 
             // Assert
-            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Exactly(2));
-            _contactRepositoryMock.Verify(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Exactly(_options.Attempts + 1));
+            _contactRepositoryMock.Verify(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()), Times.Exactly(_options.Attempts));
         }
 
         [Fact]

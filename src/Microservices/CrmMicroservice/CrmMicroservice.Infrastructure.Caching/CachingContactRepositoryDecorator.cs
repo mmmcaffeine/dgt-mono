@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.CircuitBreaker;
 using StackExchange.Redis;
@@ -18,10 +19,16 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
         private readonly ITypedCache _cache;
         private readonly IAsyncPolicy<ContactEntity?> _getContactPolicy;
 
-        public CachingContactRepositoryDecorator(IContactRepository contactRepository, ITypedCache cache)
+        public CachingContactRepositoryDecorator(IContactRepository contactRepository, ITypedCache cache, IOptionsSnapshot<CircuitBreakerOptions> optionsSnapshot)
+            : this(contactRepository, cache, optionsSnapshot.WhenNotNull(nameof(optionsSnapshot)).Get("ContactRepository"))
+        {
+        }
+
+        public CachingContactRepositoryDecorator(IContactRepository contactRepository, ITypedCache cache, CircuitBreakerOptions options)
         {
             _contactRepository = contactRepository.WhenNotNull(nameof(contactRepository));
             _cache = cache.WhenNotNull(nameof(cache));
+            _ = options.WhenNotNull(nameof(options));
 
             // BUG It appears if the repo returns null we execute GetContactFromRepositoryAndCache a second time!
             var exceptionFallbackPolicy = Policy<ContactEntity?>
@@ -33,7 +40,7 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
                 .FallbackAsync(GetContactFromRepositoryAndCacheAsync, (_, _) => Task.CompletedTask);
             var circuitBreakerPolicy = Policy<ContactEntity?>
                 .Handle<RedisConnectionException>()
-                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(1000));
+                .CircuitBreakerAsync(options.Attempts, options.Duration);
 
             _getContactPolicy = Policy.WrapAsync(nullResultFallbackPolicy, exceptionFallbackPolicy, circuitBreakerPolicy);
         }

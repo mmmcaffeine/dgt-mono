@@ -35,6 +35,8 @@ namespace Dgt.CrmMicroservice.WebApi
                 .BindConfiguration($"{FileBasedRepositoryOptions.Repositories}:{FileBasedRepositoryOptions.BranchRepository}")
                 .ValidateFluentValidation()
                 .ValidateAtStartup();
+            services.AddOptions<CircuitBreakerOptions>("ContactRepository")
+                .BindConfiguration("CircuitBreakers:ContactRepository");
 
             // ENHANCE Some method on IServiceCollection where we can bind to a type, but with a decorator on it
             services.AddTransient<FileBasedContactRepository>();
