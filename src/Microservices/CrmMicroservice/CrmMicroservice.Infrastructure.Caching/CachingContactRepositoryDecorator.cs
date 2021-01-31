@@ -7,6 +7,7 @@ using Dgt.Caching;
 using Dgt.CrmMicroservice.Domain;
 using Dgt.Extensions.Validation;
 using Polly;
+using Polly.CircuitBreaker;
 using StackExchange.Redis;
 
 namespace Dgt.CrmMicroservice.Infrastructure.Caching
@@ -22,14 +23,19 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             _contactRepository = contactRepository.WhenNotNull(nameof(contactRepository));
             _cache = cache.WhenNotNull(nameof(cache));
 
-            var getPolicy = Policy<ContactEntity?>
+            // BUG It appears if the repo returns null we execute GetContactFromRepositoryAndCache a second time!
+            var exceptionFallbackPolicy = Policy<ContactEntity?>
                 .Handle<RedisConnectionException>()
+                .Or<BrokenCircuitException>()
                 .FallbackAsync(GetContactFromRepositoryAsync, (_, _) => Task.CompletedTask);
-            var getAndCachePolicy = Policy<ContactEntity?>
+            var nullResultFallbackPolicy = Policy<ContactEntity?>
                 .HandleResult((ContactEntity?) null)
                 .FallbackAsync(GetContactFromRepositoryAndCacheAsync, (_, _) => Task.CompletedTask);
+            var circuitBreakerPolicy = Policy<ContactEntity?>
+                .Handle<RedisConnectionException>()
+                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(1000));
 
-            _getContactPolicy = Policy.WrapAsync(getAndCachePolicy, getPolicy);
+            _getContactPolicy = Policy.WrapAsync(nullResultFallbackPolicy, exceptionFallbackPolicy, circuitBreakerPolicy);
         }
 
         // QUESTION If our repository only ever returns the queryable where would we move caching to?
@@ -38,7 +44,6 @@ namespace Dgt.CrmMicroservice.Infrastructure.Caching
             return _contactRepository.GetContactsAsync(cancellationToken);
         }
 
-        // ENHANCE You might want some sort of circuit breaker for the cache in here
         public async Task<ContactEntity?> GetContactAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var key = GetCacheKey(id);

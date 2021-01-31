@@ -140,6 +140,51 @@ namespace CrmMicroservice.Infrastructure.Caching
         }
 
         [Fact]
+        public async Task GetContactAsync_Should_BreakCircuitToCache_When_CacheIsInError()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+
+            _cacheMock
+                .Setup(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+                .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"));
+
+            // Act
+            _ = await _sut.GetContactAsync(id);
+            _ = await _sut.GetContactAsync(id);
+
+            // Assert
+            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetContactAsync_Should_ResetBrokenCircuitToCache_When_TimeHasPassed()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var key = $"{nameof(ContactEntity)}:{id}".ToLowerInvariant();
+            var contact = new ContactEntity {Id = id};
+
+            _cacheMock
+                .SetupSequence(cache => cache.GetRecordAsync<ContactEntity>(It.IsAny<string>()))
+                .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Kaboom!"))
+                .ReturnsAsync(contact);
+            _contactRepositoryMock
+                .Setup(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(contact);
+
+            // Act
+            _ = await _sut.GetContactAsync(id);
+            await Task.Delay(1000 + 5);
+            _ = await _sut.GetContactAsync(id);
+
+            // Assert
+            _cacheMock.Verify(cache => cache.GetRecordAsync<ContactEntity>(key), Times.Exactly(2));
+            _contactRepositoryMock.Verify(repo => repo.GetContactAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
         public async Task GetContactAsync_Should_NotAttemptToCacheContact_When_CacheIsInError()
         {
             // Arrange
