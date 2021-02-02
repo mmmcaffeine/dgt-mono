@@ -29,4 +29,8 @@
       <PackageReference Include="Polly.Caching.Serialization.Json" Version="3.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Extensions\Extensions\Extensions.csproj" />
+    </ItemGroup>
+
 </Project>
