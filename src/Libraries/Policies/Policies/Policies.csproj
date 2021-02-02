@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>Dgt.Policies</AssemblyName>
+        <RootNamespace>Dgt.Policies</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <NoWarn />
+        <DefineConstants>TRACE</DefineConstants>
+        <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Polly" Version="7.2.1" />
+      <PackageReference Include="Polly.Caching.Distributed" Version="3.0.1" />
+      <PackageReference Include="Polly.Caching.Serialization.Json" Version="3.0.0" />
+    </ItemGroup>
+
+</Project>
