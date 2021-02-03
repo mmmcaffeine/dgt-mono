@@ -104,6 +104,38 @@ namespace Dgt.Policies
             personFromCache.Should().Be(personFromRepo);
         }
 
+        // TODO Remove duplication with ExecuteAsync_Should_ReturnCachedValue_When_ValueIsCached
+        [Fact]
+        public async Task ExecuteAsync_Should_ExecuteDelegate_When_CacheIsInError()
+        {
+            // Arrange
+            var people = new Dictionary<Guid, Person>();
+            var repoMock = new Mock<IPersonRepository>();
+
+            repoMock
+                .Setup(repo => repo.GetPersonAsync(It.IsAny<Guid>()))
+                .Callback(async (Guid id) =>
+                {
+                    people[id] = !people.ContainsKey(id)
+                        ? await CreateRandomPersonAsync(id)
+                        : people[id];
+                })
+                .Returns((Guid id) => Task.FromResult(people[id]));
+            _distributedCacheMock.Setup(cache => cache.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Kaboom!"));
+
+            // Act
+            var personId = Guid.NewGuid();
+            var context = new Context {{"id", personId}};
+
+            var personFromRepo = await _sut.ExecuteAsync(c => repoMock.Object.GetPersonAsync(personId), context);
+            var personAlsoFromRepo = await _sut.ExecuteAsync(c => repoMock.Object.GetPersonAsync(personId), context);
+
+            // Assert
+            repoMock.Verify(repo => repo.GetPersonAsync(It.IsAny<Guid>()), Times.Exactly(2));
+            personAlsoFromRepo.Should().Be(personFromRepo);
+        }
+
         // Generate random people so that if we accidentally create a person rather than e.g. getting one from a
         // cache we are unlikely to get a false positive
         private Task<Person> CreateRandomPersonAsync(Guid id)
